@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar - DJEN Consultor</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-gavel"></i>
+                <span>DJEN Consultor</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Início</a>
+                <a href="consulta.html" class="active">Consultar</a>
+                <a href="sobre.html">Sobre</a>
+                <a href="contato.html">Contato</a>
+            </div>
+            <button id="themeToggle" class="theme-toggle" aria-label="Alternar tema">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="consulta-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-filter"></i> Filtros</h2>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="input-group">
+                    <label for="processNumbers">
+                        <i class="fas fa-file-lines"></i> Números de Processo
+                    </label>
+                    <textarea 
+                        id="processNumbers" 
+                        placeholder="Cole aqui os números de processo (ex: 5001928-95.2019.4.04.7109)"
+                        rows="6"
+                    ></textarea>
+                    <small class="help-text">
+                        <i class="fas fa-info-circle"></i> 
+                        Cole texto com múltiplos números. Serão extraídos automaticamente.
+                    </small>
+                </div>
+
+                <div class="filter-section">
+                    <h3><i class="fas fa-calendar"></i> Período</h3>
+                    <div class="date-inputs">
+                        <div class="input-group">
+                            <label for="startDate">Data Inicial</label>
+                            <input type="date" id="startDate">
+                        </div>
+                        <div class="input-group">
+                            <label for="endDate">Data Final</label>
+                            <input type="date" id="endDate">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-header" onclick="toggleAdvancedFilters()">
+                        <h3><i class="fas fa-sliders"></i> Filtros Avançados</h3>
+                        <i class="fas fa-chevron-down toggle-icon" id="advancedToggle"></i>
+                    </div>
+                    <div class="advanced-filters" id="advancedFilters">
+                        <div class="input-group">
+                            <label for="filterTribunal">
+                                <i class="fas fa-building"></i> Tribunal
+                            </label>
+                            <input 
+                                type="text" 
+                                id="filterTribunal" 
+                                placeholder="Ex: STJ, TJSP, CJF..."
+                            >
+                        </div>
+                        <div class="input-group">
+                            <label for="filterOrgao">
+                                <i class="fas fa-landmark"></i> Órgão
+                            </label>
+                            <input 
+                                type="text" 
+                                id="filterOrgao" 
+                                placeholder="Nome do órgão..."
+                            >
+                        </div>
+                        <div class="input-group">
+                            <label for="filterTipo">
+                                <i class="fas fa-tag"></i> Tipo de Comunicação
+                            </label>
+                            <select id="filterTipo">
+                                <option value="">Todos</option>
+                                <option value="Intimação">Intimação</option>
+                                <option value="Edital">Edital</option>
+                                <option value="Lista de distribuição">Lista de distribuição</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-secondary btn-small" onclick="clearAdvancedFilters()">
+                            <i class="fas fa-times"></i> Limpar Filtros
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-block" id="fetchBtn" onclick="fetchMultipleProcesses()">
+                    <i class="fas fa-search"></i>
+                    <span id="btnText">Consultar Processos</span>
+                </button>
+
+                <div id="status" class="status hidden"></div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-header">
+                <h1>Resultados da Consulta</h1>
+                <div class="content-actions">
+                    <button class="btn btn-secondary" onclick="exportResults()" id="exportBtn" disabled>
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+            </div>
+
+            <div id="stats" class="stats-container hidden">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-list-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Processos Consultados</div>
+                        <div class="stat-value" id="totalProcesses">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-lines"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Comunicações Encontradas</div>
+                        <div class="stat-value" id="totalResults">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Tempo de Resposta</div>
+                        <div class="stat-value" id="responseTime">0ms</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Tamanho dos Dados</div>
+                        <div class="stat-value" id="dataSize">0 KB</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="results" class="results-container">
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <h3>Nenhuma consulta realizada</h3>
+                    <p>Use os filtros ao lado para iniciar uma consulta</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="theme.js"></script>
+    <script src="./consulta.js"></script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre - DJEN Consultor</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sobre-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        .sobre-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .sobre-header h1 {
+            font-size: 42px;
+            margin-bottom: 20px;
+        }
+        
+        .sobre-header p {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+        
+        .sobre-section {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+        
+        .sobre-section h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--primary);
+        }
+        
+        .sobre-section h2 i {
+            font-size: 32px;
+        }
+        
+        .sobre-section p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .sobre-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sobre-section ul li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            color: var(--text-secondary);
+        }
+        
+        .sobre-section ul li::before {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+        
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .tech-item {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .tech-item i {
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .tech-item span {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .cta-box {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .cta-box h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+        
+        .cta-box p {
+            font-size: 18px;
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+        
+        .cta-box .btn {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .cta-box .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-gavel"></i>
+                <span>DJEN Consultor</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Início</a>
+                <a href="consulta.html">Consultar</a>
+                <a href="sobre.html" class="active">Sobre</a>
+                <a href="contato.html">Contato</a>
+            </div>
+            <button id="themeToggle" class="theme-toggle" aria-label="Alternar tema">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="sobre-content">
+        <div class="sobre-header">
+            <h1>Sobre o DJEN Consultor</h1>
+            <p>Uma ferramenta moderna e eficiente para consulta de comunicações judiciais</p>
+        </div>
+
+        <div class="sobre-section">
+            <h2><i class="fas fa-bullseye"></i> O que é?</h2>
+            <p>
+                O DJEN Consultor é uma aplicação web gratuita que permite consultar múltiplas comunicações processuais através da API pública do Diário de Justiça Eletrônico Nacional (DJEN).
+            </p>
+            <p>
+                Desenvolvida para facilitar o trabalho de advogados, procuradores, defensores públicos e demais operadores do direito, a ferramenta automatiza o processo de consulta, permitindo verificar várias intimações, editais e outras comunicações de forma rápida e organizada.
+            </p>
+        </div>
+
+        <div class="sobre-section">
+            <h2><i class="fas fa-rocket"></i> Funcionalidades</h2>
+            <ul>
+                <li>Consulta em lote de múltiplos processos simultaneamente</li>
+                <li>Extração automática de números de processo do texto colado</li>
+                <li>Filtros avançados por data, tribunal, órgão e tipo de comunicação</li>
+                <li>Interface responsiva com suporte a modo claro e escuro</li>
+                <li>Visualização organizada dos resultados em cards informativos</li>
+                <li>Exportação de dados em formato JSON</li>
+                <li>Estatísticas detalhadas sobre as consultas realizadas</li>
+                <li>Links diretos para os documentos originais</li>
+            </ul>
+        </div>
+
+        <div class="sobre-section">
+            <h2><i class="fas fa-code"></i> Tecnologias Utilizadas</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <i class="fab fa-html5"></i>
+                    <span>HTML5</span>
+                </div>
+                <div class="tech-item">
+                    <i class="fab fa-css3-alt"></i>
+                    <span>CSS3</span>
+                </div>
+                <div class="tech-item">
+                    <i class="fab fa-js"></i>
+                    <span>JavaScript</span>
+                </div>
+                <div class="tech-item">
+                    <i class="fas fa-server"></i>
+                    <span>API DJEN</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sobre-section">
+            <h2><i class="fas fa-shield-alt"></i> Privacidade e Segurança</h2>
+            <p>
+                O DJEN Consultor respeita sua privacidade. Todas as consultas são realizadas diretamente do seu navegador para a API pública do DJEN, sem passar por servidores intermediários.
+            </p>
+            <p>
+                Nenhum dado de processo ou resultado é armazenado em nossos servidores. As informações permanecem apenas no seu navegador e podem ser excluídas a qualquer momento.
+            </p>
+        </div>
+
+      <!--   <div class="sobre-section">
+            <h2><i class="fas fa-balance-scale"></i> Código Aberto</h2>
+            <p>
+                Este projeto é de código aberto e está disponível no GitHub. Contribuições, sugestões e reportes de bugs são sempre bem-vindos!
+            </p>
+            <p>
+                O código fonte pode ser utilizado, modificado e distribuído livremente, respeitando os termos da licença do projeto.
+            </p>
+        </div> -->
+
+        <div class="cta-box">
+            <h2>Pronto para começar?</h2>
+            <p>Experimente agora e facilite suas consultas processuais</p>
+            <a href="consulta.html" class="btn btn-large">
+                <i class="fas fa-search"></i>
+                Iniciar Consulta
+            </a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>DJEN Consultor</h4>
+                    <p>Ferramenta gratuita para consulta de comunicações judiciais através da API pública do DJEN.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links Rápidos</h4>
+                    <ul>
+                        <li><a href="consulta.html">Consultar</a></li>
+                        <li><a href="sobre.html">Sobre</a></li>
+                        <li><a href="contato.html">Contato</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Recursos</h4>
+                    <ul>
+                        <li><a href="https://comunicaapi.pje.jus.br/api/v1/comunicacao" target="_blank">API DJEN</a></li>
+                        <li><a href="https://github.com" target="_blank">GitHub</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 DJEN Consultor.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="theme.js"></script>
+</body>
+</html>

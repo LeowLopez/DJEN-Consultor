@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJEN Consultor - Consulta de Comunicações Judiciais</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-gavel"></i>
+                <span>DJEN Consultor</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="active">Início</a>
+                <a href="consulta.html">Consultar</a>
+                <a href="sobre.html">Sobre</a>
+                <a href="contato.html">Contato</a>
+            </div>
+            <button id="themeToggle" class="theme-toggle" aria-label="Alternar tema">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="gradient-text">Consultor de Comunicações DJEN</span>
+            </h1>
+            <p class="hero-subtitle">
+                Consulte múltiplos processos judiciais de forma rápida e eficiente através da API pública de Comunicação do DJEN
+            </p>
+            <div class="hero-features">
+                <div class="feature-item">
+                    <i class="fas fa-bolt"></i>
+                    <span>Consultas Rápidas</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-filter"></i>
+                    <span>Filtros Avançados</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-download"></i>
+                    <span>Exportação de Dados</span>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <a href="consulta.html" class="btn btn-primary btn-large">
+                    <i class="fas fa-search"></i>
+                    Iniciar Consulta
+                </a>
+                <a href="sobre.html" class="btn btn-secondary btn-large">
+                    <i class="fas fa-info-circle"></i>
+                    Saiba Mais
+                </a>
+            </div>
+        </div>
+        <div class="hero-illustration">
+            <div class="floating-card">
+                <i class="fas fa-file-alt"></i>
+                <span>Intimações</span>
+            </div>
+            <div class="floating-card">
+                <i class="fas fa-balance-scale"></i>
+                <span>Decisões</span>
+            </div>
+            <div class="floating-card">
+                <i class="fas fa-newspaper"></i>
+                <span>Editais</span>
+            </div>
+        </div>
+    </main>
+
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title">Recursos Principais</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-list-check"></i>
+                    </div>
+                    <h3>Consulta em Lote</h3>
+                    <p>Cole múltiplos números de processo de uma vez e consulte todos simultaneamente</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-days"></i>
+                    </div>
+                    <h3>Filtro por Data</h3>
+                    <p>Defina períodos específicos para encontrar comunicações relevantes</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-building-columns"></i>
+                    </div>
+                    <h3>Filtro por Tribunal</h3>
+                    <p>Filtre resultados por tribunal, órgão ou tipo de comunicação</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Estatísticas</h3>
+                    <p>Visualize estatísticas detalhadas sobre suas consultas</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-export"></i>
+                    </div>
+                    <h3>Exportação</h3>
+                    <p>Exporte resultados em JSON ou copie para área de transferência</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <h3>Modo Escuro</h3>
+                    <p>Interface adaptável com suporte a tema claro e escuro</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>DJEN Consultor</h4>
+                    <p>Ferramenta gratuita para consulta de comunicações judiciais através da API pública do DJEN.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links Rápidos</h4>
+                    <ul>
+                        <li><a href="consulta.html">Consultar</a></li>
+                        <li><a href="sobre.html">Sobre</a></li>
+                        <li><a href="contato.html">Contato</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Recursos</h4>
+                    <ul>
+                        <li><a href="https://comunicaapi.pje.jus.br/api/v1/comunicacao" target="_blank">API DJEN</a></li>
+                        <li><a href="https://github.com" target="_blank">GitHub</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 DJEN Consultor. Projeto de código aberto.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="theme.js"></script>
+</body>
+</html>
