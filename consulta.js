@@ -102,7 +102,6 @@ function updateURLFromFilters() {
         if (el && el.value.trim()) params.set(id, el.value.trim());
     });
     history.replaceState(null, "", "?" + params.toString());
-    localStorage.setItem("lastSearchParams", "?" + params.toString());
 }
 
 function restoreFiltersFromURLorLocal() {
@@ -135,7 +134,6 @@ function showMainStatus(message, type = 'info') {
         </div>`;
 }
 
-// ====================== LOADER PRINCIPAL ======================
 function showMainLoader() {
     const resultsEl = document.getElementById('results');
     resultsEl.innerHTML = `<div class="main-loader"><div class="spinner"></div><p>Carregando...</p></div>`;
@@ -206,14 +204,8 @@ async function fetchMultipleProcesses() {
 }
 
 async function fetchAllProcesses(start, end) {
-    const params = new URLSearchParams({
-        dataDisponibilizacaoInicio: start,
-        dataDisponibilizacaoFim: end
-    });
-    const add = (id, key) => {
-        const val = document.getElementById(id).value.trim();
-        if (val) params.append(key, val);
-    };
+    const params = new URLSearchParams({ dataDisponibilizacaoInicio: start, dataDisponibilizacaoFim: end });
+    const add = (id, key) => { const val = document.getElementById(id).value.trim(); if (val) params.append(key, val); };
     add('filterTribunal','siglaTribunal');
     add('filterOrgao','nomeOrgao');
     add('filterTipo','tipoComunicacao');
@@ -227,11 +219,7 @@ async function fetchAllProcesses(start, end) {
 }
 
 async function fetchSingleProcess(num, start, end) {
-    const params = new URLSearchParams({
-        numeroProcesso: num,
-        dataDisponibilizacaoInicio: start,
-        dataDisponibilizacaoFim: end
-    });
+    const params = new URLSearchParams({ numeroProcesso: num, dataDisponibilizacaoInicio: start, dataDisponibilizacaoFim: end });
     return await fetchFromAPI(`${API_BASE_URL}?${params.toString()}`);
 }
 
@@ -246,6 +234,7 @@ function formatResults(results) {
     return Object.values(map);
 }
 
+// ====================== DISPLAY DETALHADO ======================
 function displayResults(processResults) {
     const resultsEl = document.getElementById('results');
     const statsEl = document.getElementById('stats');
@@ -258,21 +247,112 @@ function displayResults(processResults) {
     document.getElementById('dataSize').textContent = formatFileSize(new Blob([JSON.stringify(processResults)]).size);
     exportBtn.disabled = false;
 
-    if (processResults.length === 0)
-        return showMainStatus('Nenhum processo encontrado.', 'info');
+    if (processResults.length === 0) return showMainStatus('Nenhum processo encontrado.', 'info');
 
-    resultsEl.innerHTML = processResults.map(p => `
-        <div class="process-card">
-            <div class="process-header">
-                <i class="fas fa-file"></i> ${p.processNumber}
-                <span class="process-badge">${p.results.length}</span>
-            </div>
-        </div>
-    `).join('');
+    resultsEl.innerHTML = '';
+    processResults.forEach(processData => {
+        const card = createProcessCard(processData);
+        resultsEl.appendChild(card);
+    });
 }
 
-// ====================== SALVAMENTO DE BUSCAS ======================
-function getCurrentSearchParams() {
+// ======== CRIAR CARDS COMO ANTES ========
+function createProcessCard(processData) {
+    const card = document.createElement('div');
+    card.className = 'process-card';
+
+    const header = document.createElement('div');
+    header.className = 'process-header';
+
+    header.innerHTML = `
+        <div class="process-number">
+            <i class="fas fa-file"></i> ${processData.processNumber}
+        </div>
+        <div class="process-actions">
+            <button onclick="copyToClipboard('${processData.processNumber}')" title="Copiar número">
+                <i class="fas fa-copy"></i>
+            </button>
+            <button onclick="exportProcess('${processData.processNumber}')" title="Exportar CSV">
+                <i class="fas fa-file-export"></i>
+            </button>
+            <button onclick="shareProcess('${processData.processNumber}')" title="Compartilhar">
+                <i class="fas fa-share-alt"></i>
+            </button>
+        </div>
+    `;
+    card.appendChild(header);
+
+    processData.results.forEach(item => {
+        const itemDiv = createCommunicationItem(item);
+        card.appendChild(itemDiv);
+    });
+
+    return card;
+}
+
+function createCommunicationItem(item) {
+    const div = document.createElement('div');
+    div.className = 'communication-item';
+    div.innerHTML = `
+        <p><strong>Tribunal:</strong> ${item.siglaTribunal || '—'}</p>
+        <p><strong>Órgão:</strong> ${item.nomeOrgao || '—'}</p>
+        <p><strong>Tipo:</strong> ${item.tipoComunicacao || '—'}</p>
+        <p><strong>Data:</strong> ${item.dataDisponibilizacao || '—'}</p>
+        <p><strong>Meio:</strong> ${item.meio || '—'}</p>
+        <p><strong>Destinatário:</strong> ${item.nomeDestinatario || '—'}</p>
+        <p><strong>Assunto:</strong> ${item.assunto || '—'}</p>
+    `;
+    return div;
+}
+
+// ====================== UTILITÁRIOS ======================
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => showToast('Copiado para a área de transferência', 'success'));
+}
+
+function exportProcess(processNumber) {
+    const data = allResults.find(p => p.processNumber === processNumber)?.results || [];
+    if (!data.length) return showToast('Nada para exportar', 'error');
+    const csv = jsonToCSV(data);
+    downloadFile(csv, `${processNumber}.csv`, 'text/csv');
+}
+
+function shareProcess(processNumber) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('processNumbers', processNumber);
+    const shareUrl = url.toString();
+    navigator.clipboard.writeText(shareUrl).then(() => showToast('Link copiado! Você pode compartilhar em redes sociais', 'success'));
+}
+
+function jsonToCSV(objArray) {
+    const array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+    const headers = Object.keys(array[0] || {});
+    const csv = [headers.join(',')];
+    array.forEach(row => {
+        csv.push(headers.map(h => `"${(row[h] || '').toString().replace(/"/g, '""')}"`).join(','));
+    });
+    return csv.join('\r\n');
+}
+
+function downloadFile(content, fileName, type) {
+    const blob = new Blob([content], { type });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+}
+
+function formatFileSize(bytes) {
+    const sizes = ['B','KB','MB','GB','TB'];
+    if (bytes === 0) return '0 B';
+    const i = Math.floor(Math.log(bytes)/Math.log(1024));
+    return (bytes / Math.pow(1024,i)).toFixed(2) + ' ' + sizes[i];
+}
+
+// ====================== SALVAR / RECUPERAR BUSCAS ======================
+function saveCurrentSearch() {
     const params = new URLSearchParams();
     const fields = [
         "processNumbers","startDate","endDate",
@@ -285,71 +365,13 @@ function getCurrentSearchParams() {
         const el = document.getElementById(id);
         if (el && el.value.trim()) params.set(id, el.value.trim());
     });
-    return params;
-}
-
-async function saveCurrentSearch() {
-    const params = getCurrentSearchParams();
-    if (!params.toString()) return showToast("Nenhum filtro preenchido.", "error");
-
-    const name = await showModal({
-        title: "Salvar Busca",
-        message: "Dê um nome para identificar esta busca:",
-        input: true,
-        defaultValue: new Date().toLocaleString("pt-BR")
-    });
-    if (!name) return;
-
-    const saved = JSON.parse(localStorage.getItem("savedSearches") || "[]");
-    saved.push({ name, query: params.toString(), date: Date.now() });
-    localStorage.setItem("savedSearches", JSON.stringify(saved));
-    renderSavedSearches();
-    showToast("Busca salva.", "success");
+    localStorage.setItem("lastSearchParams", params.toString());
+    showToast('Busca salva!', 'success');
 }
 
 function renderSavedSearches() {
-    const container = document.getElementById("savedSearchesList");
-    if (!container) return;
-    const saved = JSON.parse(localStorage.getItem("savedSearches") || "[]");
-    if (saved.length === 0) {
-        container.innerHTML = "<p class='empty-saved'>Nenhuma busca salva.</p>";
-        return;
-    }
-    container.innerHTML = saved.map((s, i) => `
-        <div class="saved-search-item">
-            <span class="saved-name" title="${s.name}">${s.name}</span>
-            <div class="saved-actions">
-                <button class="icon-btn" onclick="loadSavedSearch(${i})" title="Carregar"><i class="fas fa-play"></i></button>
-                <button class="icon-btn" onclick="deleteSavedSearch(${i})" title="Excluir"><i class="fas fa-trash"></i></button>
-            </div>
-        </div>
-    `).join('');
-}
-
-function loadSavedSearch(index) {
-    const saved = JSON.parse(localStorage.getItem("savedSearches") || "[]");
-    const search = saved[index];
-    if (!search) return;
-    const params = new URLSearchParams(search.query);
-    for (const [key, value] of params.entries()) {
-        const el = document.getElementById(key);
-        if (el) el.value = value;
-    }
-    updateURLFromFilters();
-    showToast(`Busca "${search.name}" carregada.`, "success");
-}
-
-function deleteSavedSearch(index) {
-    const saved = JSON.parse(localStorage.getItem("savedSearches") || "[]");
-    saved.splice(index, 1);
-    localStorage.setItem("savedSearches", JSON.stringify(saved));
-    renderSavedSearches();
-}
-
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    const saved = localStorage.getItem("lastSearchParams");
+    if (!saved) return;
+    const container = document.getElementById('savedSearches');
+    container.innerHTML = `<button onclick="restoreFiltersFromURLorLocal()">Restaurar busca salva</button>`;
 }
