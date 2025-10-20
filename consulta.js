@@ -566,7 +566,7 @@ async function fetchMultipleProcesses() {
     const endDate = document.getElementById('endDate').value;
 
     const validation = validateSearchParams();
-    if (!validation.valid) return showMainStatus(validation.message, 'error');
+    if (!validation.valid) return showStatus(validation.message, 'error');
 
     updateURLFromFilters();
     showMainLoader();
@@ -587,7 +587,7 @@ async function fetchMultipleProcesses() {
             if (!confirmSearch) {
                 btn.disabled = false;
                 btnText.innerHTML = '<i class="fas fa-search"></i> Consultar Processos';
-                showMainStatus('Consulta cancelada', 'info');
+                showStatus('Consulta cancelada', 'info');
                 return;
             }
 
@@ -642,8 +642,7 @@ async function fetchMultipleProcesses() {
         displayResults(filteredResults);
 
     } catch (error) {
-        showMainStatus(error.message, 'error');
-        // document.getElementById('results').innerHTML = ''; // limpa loader
+        showStatus(error.message, 'error');
 
     } finally {
         btn.disabled = false;
