@@ -11,7 +11,6 @@ window.addEventListener('load', () => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-    restoreFiltersFromURLorLocal();
     renderSavedSearches();
 });
 
@@ -29,10 +28,31 @@ function toggleAdvancedFilters() {
 
 function clearAdvancedFilters() {
     [
-        'filterTribunal','filterOrgao','filterTipo',
-        'filterNomeParte','filterNomeAdvogado',
-        'filterNumeroOab','filterUfOab','filterMeio'
+        'filterTribunal', 'filterOrgao', 'filterTipo',
+        'filterNomeParte', 'filterNomeAdvogado',
+        'filterNumeroOab', 'filterUfOab', 'filterMeio'
     ].forEach(id => document.getElementById(id).value = '');
+}
+
+// ====================== PRESET DE DATAS ======================
+function setDatePreset(preset) {
+    const endDate = new Date();
+    let startDate = new Date();
+
+    switch (preset) {
+        case 'today':
+            startDate = new Date();
+            break;
+        case 'week':
+            startDate.setDate(endDate.getDate() - 7);
+            break;
+        case 'month':
+            startDate.setDate(endDate.getDate() - 30);
+            break;
+    }
+
+    document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+    document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
 }
 
 // ====================== MODAIS PERSONALIZADOS ======================
@@ -60,6 +80,59 @@ function showModal(options) {
             resolve(val || null);
         };
     });
+}
+
+function showShareModal(url) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+        <div class="modal-box">
+            <h3><i class="fas fa-share-nodes"></i> Compartilhar Busca</h3>
+            <p>Compartilhe esta busca com outras pessoas:</p>
+            <div class="share-options">
+                <button class="btn btn-primary" onclick="copyShareLink('${url}')">
+                    <i class="fas fa-copy"></i> Copiar Link
+                </button>
+                <button class="btn btn-secondary" onclick="shareToWhatsApp('${url}')">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </button>
+                <button class="btn btn-secondary" onclick="shareToTelegram('${url}')">
+                    <i class="fab fa-telegram"></i> Telegram
+                </button>
+                <button class="btn btn-secondary" onclick="shareToEmail('${url}')">
+                    <i class="fas fa-envelope"></i> Email
+                </button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Fechar</button>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+}
+
+function showExportMenu() {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+        <div class="modal-box">
+            <h3><i class="fas fa-download"></i> Exportar Resultados</h3>
+            <p>Escolha o formato de exportação:</p>
+            <div class="export-options">
+                <button class="btn btn-primary" onclick="exportResults('json')">
+                    <i class="fas fa-code"></i> JSON
+                </button>
+                <button class="btn btn-secondary" onclick="exportResults('csv')">
+                    <i class="fas fa-table"></i> CSV
+                </button>
+                <button class="btn btn-secondary" onclick="exportResults('pdf')">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
 }
 
 // ====================== VALIDAÇÃO E PARÂMETROS ======================
@@ -90,10 +163,10 @@ function extractProcessNumbers(text) {
 function updateURLFromFilters() {
     const params = new URLSearchParams();
     const fields = [
-        "processNumbers","startDate","endDate",
-        "filterTribunal","filterOrgao","filterTipo",
-        "filterNomeParte","filterNomeAdvogado",
-        "filterNumeroOab","filterUfOab","filterMeio",
+        "processNumbers", "startDate", "endDate",
+        "filterTribunal", "filterOrgao", "filterTipo",
+        "filterNomeParte", "filterNomeAdvogado",
+        "filterNumeroOab", "filterUfOab", "filterMeio",
         "itensPorPagina"
     ];
     fields.forEach(id => {
@@ -101,19 +174,6 @@ function updateURLFromFilters() {
         if (el && el.value.trim()) params.set(id, el.value.trim());
     });
     history.replaceState(null, "", "?" + params.toString());
-    localStorage.setItem("lastSearchParams", "?" + params.toString());
-}
-
-function restoreFiltersFromURLorLocal() {
-    const params = new URLSearchParams(window.location.search);
-    const saved = localStorage.getItem("lastSearchParams");
-    const sourceParams = params.size ? params : saved ? new URLSearchParams(saved) : null;
-    if (!sourceParams) return;
-    for (const [key, value] of sourceParams.entries()) {
-        const el = document.getElementById(key);
-        if (el) el.value = value;
-    }
-    if (params.size) fetchMultipleProcesses();
 }
 
 // ====================== FEEDBACK VISUAL ======================
@@ -130,6 +190,7 @@ function showToast(message, type) {
 }
 
 function showStatus(message, type) {
+    showMainStatus(message, type);
     const statusEl = document.getElementById('status');
     statusEl.innerHTML = `<i class="fas fa-${type === 'loading' ? 'spinner fa-spin' : type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
     statusEl.className = `status ${type}`;
@@ -194,8 +255,8 @@ async function fetchSingleProcess(num, start, end) {
 async function fetchAllProcesses(start, end) {
     const params = new URLSearchParams({ dataDisponibilizacaoInicio: start, dataDisponibilizacaoFim: end });
     const add = (id, key) => { const val = document.getElementById(id).value.trim(); if (val) params.append(key, val); };
-    ['filterTribunal','filterOrgao','filterTipo','filterNomeParte','filterNomeAdvogado','filterNumeroOab','filterUfOab','filterMeio','itensPorPagina']
-        .forEach(id => add(id, id === 'itensPorPagina' ? id : id.replace('filter','')));
+    ['filterTribunal', 'filterOrgao', 'filterTipo', 'filterNomeParte', 'filterNomeAdvogado', 'filterNumeroOab', 'filterUfOab', 'filterMeio', 'itensPorPagina']
+        .forEach(id => add(id, id === 'itensPorPagina' ? id : id.replace('filter', '')));
     return await fetchFromAPI(`${API_BASE_URL}?${params.toString()}`);
 }
 
@@ -213,7 +274,7 @@ function formatResults(results) {
 
 function getTypeTag(tipo) {
     const typeClass = tipo?.toLowerCase().includes('intima') ? 'intimacao' :
-                     tipo?.toLowerCase().includes('edital') ? 'edital' : 'lista';
+        tipo?.toLowerCase().includes('edital') ? 'edital' : 'lista';
     return `<span class="tag ${typeClass}">${tipo || 'N/A'}</span>`;
 }
 
@@ -302,15 +363,143 @@ function displayResults(processResults) {
 }
 
 // ====================== EXPORTAÇÃO ======================
-function exportResults() {
+function exportResults(format = 'json') {
     const filteredResults = applyFilters(allResults);
-    const dataBlob = new Blob([JSON.stringify(filteredResults, null, 2)], { type: 'application/json' });
+    const timestamp = new Date().toISOString().split('T')[0];
+
+    // Fecha o modal
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) modal.remove();
+
+    if (format === 'json') {
+        const dataBlob = new Blob([JSON.stringify(filteredResults, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `djen-consulta-${timestamp}.json`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        showToast('Resultados exportados em JSON!', 'success');
+    } else if (format === 'csv') {
+        exportToCSV(filteredResults, timestamp);
+    } else if (format === 'pdf') {
+        exportToPDF(filteredResults, timestamp);
+    }
+}
+
+function exportToCSV(results, timestamp) {
+    const rows = [];
+    rows.push(['Número do Processo', 'Data', 'Tribunal', 'Órgão', 'Tipo', 'Classe', 'Meio', 'Link']);
+
+    results.forEach(process => {
+        if (process.results && process.results.length > 0) {
+            process.results.forEach(item => {
+                rows.push([
+                    process.processNumber,
+                    item.data_disponibilizacao || '',
+                    item.siglaTribunal || '',
+                    item.nomeOrgao || '',
+                    item.tipoComunicacao || '',
+                    item.nomeClasse || '',
+                    item.meiocompleto || '',
+                    item.link || ''
+                ]);
+            });
+        }
+    });
+
+    const csvContent = rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const dataBlob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(dataBlob);
-    link.download = `djen-consulta-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `djen-consulta-${timestamp}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
-    showToast('Resultados exportados com sucesso!', 'success');
+    showToast('Resultados exportados em CSV!', 'success');
+}
+
+function exportToPDF(results, timestamp) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    let yPosition = 20;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 20;
+    const lineHeight = 7;
+
+    // Título
+    doc.setFontSize(16);
+    doc.text('DJEN Consultor - Resultados', margin, yPosition);
+    yPosition += 10;
+
+    doc.setFontSize(10);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, margin, yPosition);
+    yPosition += 10;
+
+    // Processos
+    results.forEach((process, index) => {
+        if (yPosition > pageHeight - 40) {
+            doc.addPage();
+            yPosition = 20;
+        }
+
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text(`Processo: ${process.processNumber}`, margin, yPosition);
+        yPosition += lineHeight;
+
+        if (process.results && process.results.length > 0) {
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Total de comunicações: ${process.results.length}`, margin, yPosition);
+            yPosition += lineHeight + 3;
+
+            process.results.forEach((item, idx) => {
+                if (yPosition > pageHeight - 40) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+
+                doc.setFont(undefined, 'bold');
+                doc.text(`Comunicação ${idx + 1}:`, margin + 5, yPosition);
+                yPosition += lineHeight;
+
+                doc.setFont(undefined, 'normal');
+
+                if (item.data_disponibilizacao) {
+                    doc.text(`Data: ${item.data_disponibilizacao}`, margin + 10, yPosition);
+                    yPosition += lineHeight;
+                }
+
+                if (item.siglaTribunal) {
+                    doc.text(`Tribunal: ${item.siglaTribunal}`, margin + 10, yPosition);
+                    yPosition += lineHeight;
+                }
+
+                if (item.nomeOrgao) {
+                    const orgaoLines = doc.splitTextToSize(`Órgão: ${item.nomeOrgao}`, 170);
+                    doc.text(orgaoLines, margin + 10, yPosition);
+                    yPosition += lineHeight * orgaoLines.length;
+                }
+
+                if (item.tipoComunicacao) {
+                    doc.text(`Tipo: ${item.tipoComunicacao}`, margin + 10, yPosition);
+                    yPosition += lineHeight;
+                }
+
+                yPosition += 3;
+            });
+        } else {
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'italic');
+            doc.text('Nenhuma comunicação encontrada', margin + 5, yPosition);
+            yPosition += lineHeight;
+        }
+
+        yPosition += 5;
+    });
+
+    doc.save(`djen-consulta-${timestamp}.pdf`);
+    showToast('Resultados exportados em PDF!', 'success');
 }
 
 function exportProcess(processNumber) {
@@ -323,6 +512,31 @@ function exportProcess(processNumber) {
     link.click();
     URL.revokeObjectURL(link.href);
     showToast('Processo exportado com sucesso!', 'success');
+}
+
+// ====================== COMPARTILHAMENTO ======================
+function copyShareLink(url) {
+    copyToClipboard(url);
+    document.querySelector('.modal-overlay').remove();
+}
+
+function shareToWhatsApp(url) {
+    const text = encodeURIComponent(`Confira esta consulta DJEN: ${url}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+    document.querySelector('.modal-overlay').remove();
+}
+
+function shareToTelegram(url) {
+    const text = encodeURIComponent(`Confira esta consulta DJEN: ${url}`);
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${text}`, '_blank');
+    document.querySelector('.modal-overlay').remove();
+}
+
+function shareToEmail(url) {
+    const subject = encodeURIComponent('Consulta DJEN - Compartilhamento');
+    const body = encodeURIComponent(`Olá,\n\nCompartilho com você esta consulta do DJEN:\n\n${url}\n\nAtenciosamente.`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    document.querySelector('.modal-overlay').remove();
 }
 
 // ====================== FILTROS ======================
@@ -365,8 +579,17 @@ async function fetchMultipleProcesses() {
     try {
         let results = [];
         if (!processText) {
-            const confirmSearch = confirm('Deseja buscar TODAS as comunicações no período selecionado? Isso pode retornar muitos resultados e levar mais tempo.');
-            if (!confirmSearch) return;
+
+            const confirmSearch = await showModal({
+                title: "Confirmar busca",
+                message: "Deseja buscar TODAS as comunicações no período selecionado? Isso pode retornar muitos resultados e levar mais tempo.",
+            });
+            if (!confirmSearch) {
+                btn.disabled = false;
+                btnText.innerHTML = '<i class="fas fa-search"></i> Consultar Processos';
+                showMainStatus('Consulta cancelada', 'info');
+                return;
+            }
 
             showStatus('Buscando todas as comunicações no período...', 'loading');
             const startTime = performance.now();
@@ -381,6 +604,7 @@ async function fetchMultipleProcesses() {
             });
             const formattedResults = Object.values(processMap);
             const totalTime = Math.round(performance.now() - startTime);
+            document.getElementById('responseTime').textContent = `${totalTime}ms`;
             showStatus(`Consulta concluída! ${formattedResults.length} processos encontrados (${results.length} comunicações) em ${totalTime}ms`, 'success');
             displayResults(formattedResults);
             return;
@@ -414,11 +638,13 @@ async function fetchMultipleProcesses() {
         const filteredResults = applyFilters(processResults);
         const totalTime = Math.round(performance.now() - startTime);
         document.getElementById('responseTime').textContent = `${totalTime}ms`;
-        showStatus(`Consulta concluída! ${filteredResults.filter(p => p.results.length > 0).length}/${processNumbers.length} processos com resultados (${filteredResults.reduce((s,p)=>s+(p.results?.length||0),0)} comunicações)`, 'success');
+        showStatus(`Consulta concluída! ${filteredResults.filter(p => p.results.length > 0).length}/${processNumbers.length} processos com resultados (${filteredResults.reduce((s, p) => s + (p.results?.length || 0), 0)} comunicações)`, 'success');
         displayResults(filteredResults);
 
     } catch (error) {
         showMainStatus(error.message, 'error');
+        // document.getElementById('results').innerHTML = ''; // limpa loader
+
     } finally {
         btn.disabled = false;
         btnText.innerHTML = '<i class="fas fa-search"></i> Consultar Processos';
@@ -429,10 +655,10 @@ async function fetchMultipleProcesses() {
 function getCurrentSearchParams() {
     const params = new URLSearchParams();
     const fields = [
-        "processNumbers","startDate","endDate",
-        "filterTribunal","filterOrgao","filterTipo",
-        "filterNomeParte","filterNomeAdvogado",
-        "filterNumeroOab","filterUfOab","filterMeio",
+        "processNumbers", "startDate", "endDate",
+        "filterTribunal", "filterOrgao", "filterTipo",
+        "filterNomeParte", "filterNomeAdvogado",
+        "filterNumeroOab", "filterUfOab", "filterMeio",
         "itensPorPagina"
     ];
     fields.forEach(id => {
@@ -458,7 +684,7 @@ async function saveCurrentSearch() {
     saved.push({ name, query: params.toString(), date: Date.now() });
     localStorage.setItem("savedSearches", JSON.stringify(saved));
     renderSavedSearches();
-    showToast("Busca salva.", "success");
+    showToast("Busca salva com sucesso!", "success");
 }
 
 function renderSavedSearches() {
@@ -474,6 +700,7 @@ function renderSavedSearches() {
             <span class="saved-name" title="${s.name}">${s.name}</span>
             <div class="saved-actions">
                 <button class="icon-btn" onclick="loadSavedSearch(${i})" title="Carregar"><i class="fas fa-play"></i></button>
+                <button class="icon-btn" onclick="shareSavedSearch(${i})" title="Compartilhar"><i class="fas fa-share-nodes"></i></button>
                 <button class="icon-btn" onclick="deleteSavedSearch(${i})" title="Excluir"><i class="fas fa-trash"></i></button>
             </div>
         </div>`).join('');
@@ -492,9 +719,21 @@ function loadSavedSearch(index) {
     showToast(`Busca "${search.name}" carregada.`, "success");
 }
 
+function shareSavedSearch(index) {
+    const saved = JSON.parse(localStorage.getItem("savedSearches") || "[]");
+    const search = saved[index];
+    if (!search) return;
+
+    const baseUrl = window.location.origin + window.location.pathname;
+    const fullUrl = `${baseUrl}?${search.query}`;
+
+    showShareModal(fullUrl);
+}
+
 function deleteSavedSearch(index) {
     const saved = JSON.parse(localStorage.getItem("savedSearches") || "[]");
     saved.splice(index, 1);
     localStorage.setItem("savedSearches", JSON.stringify(saved));
     renderSavedSearches();
+    showToast("Busca excluída.", "success");
 }

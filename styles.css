@@ -1,3 +1,4 @@
+/* ====================== VARIÁVEIS ====================== */
 :root {
     --primary: #065f46;
     --primary-dark: #047857;
@@ -29,6 +30,7 @@
     --shadow-lg: rgba(0, 0, 0, 0.6);
 }
 
+/* ====================== RESET E BASE ====================== */
 * {
     margin: 0;
     padding: 0;
@@ -43,7 +45,7 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Navbar */
+/* ====================== NAVBAR ====================== */
 .navbar {
     background: var(--bg-primary);
     border-bottom: 1px solid var(--border);
@@ -124,7 +126,7 @@ body {
     transform: scale(1.1);
 }
 
-/* Hero Section */
+/* ====================== HERO SECTION ====================== */
 .hero {
     max-width: 1400px;
     margin: 0 auto;
@@ -221,12 +223,7 @@ body {
     color: var(--primary);
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-}
-
-/* Buttons */
+/* ====================== BOTÕES ====================== */
 .btn {
     padding: 12px 24px;
     border-radius: 8px;
@@ -266,8 +263,8 @@ body {
 }
 
 .btn-small {
-    padding: 8px 16px;
-    font-size: 14px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
 }
 
 .btn-block {
@@ -280,7 +277,27 @@ body {
     cursor: not-allowed;
 }
 
-/* Features Section */
+.icon-btn {
+    background: var(--bg-tertiary);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-primary);
+}
+
+.icon-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* ====================== FEATURES SECTION ====================== */
 .features-section {
     background: var(--bg-primary);
     padding: 80px 20px;
@@ -343,7 +360,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* Footer */
+/* ====================== FOOTER ====================== */
 .footer {
     background: var(--bg-primary);
     border-top: 1px solid var(--border);
@@ -391,12 +408,13 @@ body {
     color: var(--text-secondary);
 }
 
-/* Consulta Layout */
+/* ====================== LAYOUT DE CONSULTA ====================== */
 .consulta-layout {
     display: flex;
     min-height: calc(100vh - 64px);
 }
 
+/* ====================== SIDEBAR ====================== */
 .sidebar {
     width: 400px;
     background: var(--bg-primary);
@@ -456,6 +474,7 @@ body {
     flex: 1;
 }
 
+/* ====================== INPUTS E FORMULÁRIOS ====================== */
 .input-group {
     margin-bottom: 20px;
 }
@@ -493,7 +512,7 @@ body {
 .input-group select:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 3px rgba(6, 95, 70, 0.1);
 }
 
 .help-text {
@@ -505,6 +524,7 @@ body {
     margin-top: 5px;
 }
 
+/* ====================== FILTROS ====================== */
 .filter-section {
     margin-bottom: 25px;
     padding-bottom: 20px;
@@ -550,12 +570,20 @@ body {
     padding-top: 15px;
 }
 
+.date-presets {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
 .date-inputs {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
 
+/* ====================== STATUS E FEEDBACK ====================== */
 .status {
     padding: 12px;
     border-radius: 8px;
@@ -603,7 +631,29 @@ body {
     color: #fee2e2;
 }
 
-/* Main Content */
+.main-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.main-status.error {
+    color: #d9534f;
+}
+
+.main-status.loading {
+    color: var(--primary);
+}
+
+.main-status i {
+    font-size: 36px;
+    margin-bottom: 15px;
+}
+
+/* ====================== CONTEÚDO PRINCIPAL ====================== */
 .main-content {
     flex: 1;
     padding: 30px;
@@ -626,7 +676,7 @@ body {
     gap: 10px;
 }
 
-/* Stats Container */
+/* ====================== ESTATÍSTICAS ====================== */
 .stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -688,7 +738,7 @@ body {
     color: var(--text-primary);
 }
 
-/* Results Container */
+/* ====================== RESULTADOS ====================== */
 .results-container {
     min-height: 400px;
 }
@@ -711,7 +761,7 @@ body {
     color: var(--text-primary);
 }
 
-/* Process Card */
+/* ====================== CARDS DE PROCESSO ====================== */
 .process-card {
     background: var(--bg-primary);
     border: 1px solid var(--border);
@@ -767,30 +817,11 @@ body {
     gap: 10px;
 }
 
-.icon-btn {
-    background: var(--bg-tertiary);
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: var(--text-primary);
-}
-
-.icon-btn:hover {
-    background: var(--primary);
-    color: white;
-    transform: scale(1.1);
-}
-
 .process-body {
     padding: 0;
 }
 
+/* ====================== ITENS DE COMUNICAÇÃO ====================== */
 .communication-item {
     padding: 20px;
     border-bottom: 1px solid var(--border);
@@ -921,6 +952,7 @@ body {
     gap: 8px;
 }
 
+/* ====================== DESTINATÁRIOS ====================== */
 .destinatarios-section {
     margin-top: 15px;
     padding-top: 15px;
@@ -949,72 +981,188 @@ body {
     border: 1px solid var(--border);
 }
 
-/* Loading Spinner */
+/* ====================== BUSCAS SALVAS ====================== */
+.saved-search-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.saved-search-item:hover {
+    background: var(--bg-tertiary);
+    transform: translateX(2px);
+}
+
+.saved-name {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.saved-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.empty-saved {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 14px;
+}
+
+/* ====================== MODAIS ====================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-box {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+.modal-box h3 {
+    margin: 0 0 16px 0;
+    color: var(--primary);
+    font-size: 20px;
+}
+
+.modal-box p {
+    margin: 0 0 16px 0;
+    color: var(--text-secondary);
+}
+
+.modal-box input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    margin-bottom: 16px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* ====================== COMPARTILHAMENTO E EXPORTAÇÃO ====================== */
+.share-options,
+.export-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.share-options .btn,
+.export-options .btn {
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.share-options .btn i,
+.export-options .btn i {
+    margin-right: 10px;
+    width: 20px;
+}
+
+/* ====================== LOADING E SPINNERS ====================== */
+.main-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: var(--text-secondary);
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+}
+
 .loading-spinner {
     display: inline-block;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    border-top-color: white;
+    animation: spin 0.6s linear infinite;
+    margin-right: 8px;
+}
+
+/* ====================== ANIMAÇÕES ====================== */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-    .hero {
-        grid-template-columns: 1fr;
-        padding: 60px 20px;
-    }
-    
-    .hero-illustration {
-        height: 300px;
+    to {
+        transform: rotate(360deg);
     }
 }
 
-@media (max-width: 768px) {
-    .nav-links {
-        display: none;
-    }
-    
-    .hero-title {
-        font-size: 36px;
-    }
-    
-    .hero-features {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .hero-actions {
-        flex-direction: column;
-    }
-    
-    .consulta-layout {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        position: relative;
-        height: auto;
-        top: 0;
-    }
-    
-    .stats-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .info-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Scrollbar */
+/* ====================== SCROLLBAR ====================== */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -1033,91 +1181,66 @@ body {
     background: var(--text-secondary);
 }
 
-/* Loader principal */
-.main-loader {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  color: var(--text-secondary);
-}
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid var(--border);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.9s linear infinite;
-}
-@keyframes spin { 100% { transform: rotate(360deg); } }
+/* ====================== RESPONSIVO ====================== */
+@media (max-width: 1200px) {
+    .hero {
+        grid-template-columns: 1fr;
+        padding: 60px 20px;
+    }
 
-/* Status principal */
-.main-status {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--text-secondary);
-}
-.main-status.error { color: #d9534f; }
-.main-status.loading { color: var(--primary); }
-.main-status i { font-size: 36px; margin-bottom: 15px; }
-
-/* Modal personalizado */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 9999;
-}
-.modal-box {
-  background: var(--bg-primary);
-  padding: 25px;
-  border-radius: 10px;
-  width: 340px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-}
-.modal-box h3 {
-  margin-top: 0;
-  color: var(--text-primary);
-  font-size: 20px;
-}
-.modal-box p { color: var(--text-secondary); margin-bottom: 15px; }
-.modal-box input {
-  width: 100%; padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-bottom: 15px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-.modal-actions {
-  display: flex; justify-content: flex-end; gap: 10px;
+    .hero-illustration {
+        height: 300px;
+    }
 }
 
-/* Seção buscas salvas */
-.saved-search-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-}
-.saved-name {
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  color: var(--text-primary);
-}
-.saved-actions button {
-  margin-left: 6px;
-}
-.empty-saved {
-  color: var(--text-secondary);
-  font-size: 14px;
-  text-align: center;
-  margin: 10px 0;
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+
+    .hero-title {
+        font-size: 36px;
+    }
+
+    .hero-features {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+    }
+
+    .consulta-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        position: relative;
+        height: auto;
+        top: 0;
+    }
+
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+
+    .info-row {
+        grid-template-columns: 1fr;
+    }
+
+    .date-inputs {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-box {
+        width: 95%;
+        padding: 20px;
+    }
+
+    .share-options .btn,
+    .export-options .btn {
+        font-size: 14px;
+    }
 }

@@ -63,6 +63,11 @@
                             <input type="date" id="endDate">
                         </div>
                     </div>
+                    <div class="date-presets">
+                        <button class="btn btn-small" onclick="setDatePreset('today')">Hoje</button>
+                        <button class="btn btn-small" onclick="setDatePreset('week')">7 dias</button>
+                        <button class="btn btn-small" onclick="setDatePreset('month')">30 dias</button>
+                    </div>
                 </div>
 
                 <div class="filter-section">
@@ -173,7 +178,7 @@
             <div class="content-header">
                 <h1>Resultados da Consulta</h1>
                 <div class="content-actions">
-                    <button class="btn btn-secondary" onclick="exportResults()" id="exportBtn" disabled>
+                    <button class="btn btn-secondary" onclick="showExportMenu()" id="exportBtn" disabled>
                         <i class="fas fa-download"></i> Exportar
                     </button>
                 </div>
@@ -228,8 +233,10 @@
         </main>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="theme.js"></script>
     <script src="consulta.js"></script>
+    
 </body>
 
 </html>
