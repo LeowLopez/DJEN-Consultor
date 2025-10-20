@@ -53,7 +53,6 @@ function showModal(options) {
         document.body.appendChild(overlay);
 
         const cleanup = () => overlay.remove();
-
         document.getElementById('cancelBtn').onclick = () => { cleanup(); resolve(null); };
         document.getElementById('okBtn').onclick = () => {
             const val = options.input ? document.getElementById('modalInput').value.trim() : true;
@@ -102,6 +101,7 @@ function updateURLFromFilters() {
         if (el && el.value.trim()) params.set(id, el.value.trim());
     });
     history.replaceState(null, "", "?" + params.toString());
+    localStorage.setItem("lastSearchParams", "?" + params.toString());
 }
 
 function restoreFiltersFromURLorLocal() {
@@ -120,9 +120,20 @@ function restoreFiltersFromURLorLocal() {
 function showToast(message, type) {
     const toast = document.createElement('div');
     toast.className = `status ${type}`;
-    toast.textContent = message;
+    toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '10000';
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function showStatus(message, type) {
+    const statusEl = document.getElementById('status');
+    statusEl.innerHTML = `<i class="fas fa-${type === 'loading' ? 'spinner fa-spin' : type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+    statusEl.className = `status ${type}`;
+    statusEl.classList.remove('hidden');
 }
 
 function showMainStatus(message, type = 'info') {
@@ -137,6 +148,23 @@ function showMainStatus(message, type = 'info') {
 function showMainLoader() {
     const resultsEl = document.getElementById('results');
     resultsEl.innerHTML = `<div class="main-loader"><div class="spinner"></div><p>Carregando...</p></div>`;
+}
+
+// ====================== UTILIDADES ======================
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('Copiado para área de transferência!', 'success');
+    }).catch(() => {
+        showToast('Erro ao copiar', 'error');
+    });
 }
 
 // ====================== REQUISIÇÕES ======================
@@ -156,6 +184,165 @@ async function fetchFromAPI(url) {
     } catch (err) {
         return { error: err.message };
     }
+}
+
+async function fetchSingleProcess(num, start, end) {
+    const params = new URLSearchParams({ numeroProcesso: num, dataDisponibilizacaoInicio: start, dataDisponibilizacaoFim: end });
+    return await fetchFromAPI(`${API_BASE_URL}?${params.toString()}`);
+}
+
+async function fetchAllProcesses(start, end) {
+    const params = new URLSearchParams({ dataDisponibilizacaoInicio: start, dataDisponibilizacaoFim: end });
+    const add = (id, key) => { const val = document.getElementById(id).value.trim(); if (val) params.append(key, val); };
+    ['filterTribunal','filterOrgao','filterTipo','filterNomeParte','filterNomeAdvogado','filterNumeroOab','filterUfOab','filterMeio','itensPorPagina']
+        .forEach(id => add(id, id === 'itensPorPagina' ? id : id.replace('filter','')));
+    return await fetchFromAPI(`${API_BASE_URL}?${params.toString()}`);
+}
+
+// ====================== FORMATAÇÃO DE RESULTADOS ======================
+function formatResults(results) {
+    if (!Array.isArray(results)) return [];
+    const map = {};
+    results.forEach(item => {
+        const num = item.numeroprocessocommascara || item.numeroProcesso || 'Desconhecido';
+        if (!map[num]) map[num] = { processNumber: num, results: [] };
+        map[num].results.push(item);
+    });
+    return Object.values(map);
+}
+
+function getTypeTag(tipo) {
+    const typeClass = tipo?.toLowerCase().includes('intima') ? 'intimacao' :
+                     tipo?.toLowerCase().includes('edital') ? 'edital' : 'lista';
+    return `<span class="tag ${typeClass}">${tipo || 'N/A'}</span>`;
+}
+
+function createCommunicationItem(item, index) {
+    const div = document.createElement('div');
+    div.className = 'communication-item';
+    const typeTag = getTypeTag(item.tipoComunicacao);
+
+    div.innerHTML = `
+        <div class="communication-header">
+            <div>
+                <div class="communication-title">
+                    <i class="fas fa-file-lines"></i>
+                    Comunicação ${index}
+                </div>
+                <div class="communication-meta">
+                    ${item.data_disponibilizacao ? `<span class="meta-item"><i class="fas fa-calendar"></i>${item.data_disponibilizacao}</span>` : ''}
+                    ${item.siglaTribunal ? `<span class="meta-item"><i class="fas fa-building"></i>${item.siglaTribunal}</span>` : ''}
+                </div>
+            </div>
+            <div class="communication-tags">${typeTag}</div>
+        </div>
+        <div class="communication-content">
+            ${item.nomeOrgao ? `<div class="info-row"><span class="info-label">Órgão:</span><span class="info-value">${item.nomeOrgao}</span></div>` : ''}
+            ${item.nomeClasse ? `<div class="info-row"><span class="info-label">Classe:</span><span class="info-value">${item.nomeClasse}</span></div>` : ''}
+            ${item.meiocompleto ? `<div class="info-row"><span class="info-label">Meio:</span><span class="info-value">${item.meiocompleto}</span></div>` : ''}
+            ${item.link ? `<div class="info-row"><span class="info-label">Link:</span><a href="${item.link}" target="_blank" class="communication-link">Acessar documento <i class="fas fa-external-link-alt"></i></a></div>` : ''}
+            ${item.texto && item.texto !== 'Não foi possível extrair conteúdo do documento' ? `<div class="communication-text">${item.texto}</div>` : ''}
+            ${item.destinatarios && item.destinatarios.length > 0 ? `<div class="destinatarios-section"><div class="destinatarios-title">Destinatários</div><div class="destinatarios-list">${item.destinatarios.map(d => `<span class="destinatario-badge">${d.nome} ${d.polo ? `(${d.polo})` : ''}</span>`).join('')}</div></div>` : ''}
+            ${item.destinatarioadvogados && item.destinatarioadvogados.length > 0 ? `<div class="destinatarios-section"><div class="destinatarios-title">Advogados</div><div class="destinatarios-list">${item.destinatarioadvogados.map(a => `<span class="destinatario-badge">${a.advogado.nome} - ${a.advogado.numero_oab}/${a.advogado.uf_oab}</span>`).join('')}</div></div>` : ''}
+        </div>`;
+    return div;
+}
+
+function createProcessCard(processData) {
+    const card = document.createElement('div');
+    card.className = 'process-card';
+
+    const header = document.createElement('div');
+    header.className = 'process-header';
+
+    if (!processData.results || processData.results.length === 0) {
+        header.classList.add('no-results');
+        header.innerHTML = `
+            <div class="process-number"><i class="fas fa-file"></i>${processData.processNumber}</div>
+            <div class="process-actions">
+                <button class="icon-btn" onclick="copyToClipboard('${processData.processNumber}')" title="Copiar número"><i class="fas fa-copy"></i></button>
+            </div>`;
+    } else {
+        header.innerHTML = `
+            <div class="process-number"><i class="fas fa-file"></i>${processData.processNumber}<span class="process-badge">${processData.results.length}</span></div>
+            <div class="process-actions">
+                <button class="icon-btn" onclick="copyToClipboard('${processData.processNumber}')" title="Copiar número"><i class="fas fa-copy"></i></button>
+                <button class="icon-btn" onclick="exportProcess('${processData.processNumber}')" title="Exportar processo"><i class="fas fa-download"></i></button>
+            </div>`;
+
+        const body = document.createElement('div');
+        body.className = 'process-body';
+        processData.results.forEach((item, idx) => body.appendChild(createCommunicationItem(item, idx + 1)));
+        card.appendChild(body);
+    }
+
+    card.insertBefore(header, card.firstChild);
+    return card;
+}
+
+function displayResults(processResults) {
+    const resultsEl = document.getElementById('results');
+    const statsEl = document.getElementById('stats');
+    const exportBtn = document.getElementById('exportBtn');
+    allResults = processResults;
+
+    statsEl.classList.remove('hidden');
+    document.getElementById('totalProcesses').textContent = processResults.length;
+    document.getElementById('totalResults').textContent = processResults.reduce((s, p) => s + (p.results?.length || 0), 0);
+    document.getElementById('dataSize').textContent = formatFileSize(new Blob([JSON.stringify(processResults)]).size);
+    exportBtn.disabled = false;
+
+    resultsEl.innerHTML = '';
+    if (processResults.length === 0) {
+        resultsEl.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><h3>Nenhum processo encontrado</h3><p>Verifique os números de processo inseridos</p></div>`;
+        return;
+    }
+
+    processResults.forEach(p => resultsEl.appendChild(createProcessCard(p)));
+}
+
+// ====================== EXPORTAÇÃO ======================
+function exportResults() {
+    const filteredResults = applyFilters(allResults);
+    const dataBlob = new Blob([JSON.stringify(filteredResults, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = `djen-consulta-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    showToast('Resultados exportados com sucesso!', 'success');
+}
+
+function exportProcess(processNumber) {
+    const processData = allResults.find(p => p.processNumber === processNumber);
+    if (!processData) return;
+    const dataBlob = new Blob([JSON.stringify(processData, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = `processo-${processNumber}.json`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    showToast('Processo exportado com sucesso!', 'success');
+}
+
+// ====================== FILTROS ======================
+function applyFilters(results) {
+    const tribunal = document.getElementById('filterTribunal').value.toLowerCase();
+    const orgao = document.getElementById('filterOrgao').value.toLowerCase();
+    const tipo = document.getElementById('filterTipo').value;
+
+    if (!tribunal && !orgao && !tipo) return results;
+
+    return results.map(process => {
+        if (!process.results || process.results.length === 0) return process;
+        const filteredResults = process.results.filter(item => {
+            if (tribunal && !item.siglaTribunal?.toLowerCase().includes(tribunal)) return false;
+            if (orgao && !item.nomeOrgao?.toLowerCase().includes(orgao)) return false;
+            if (tipo && item.tipoComunicacao !== tipo) return false;
+            return true;
+        });
+        return { ...process, results: filteredResults };
+    });
 }
 
 // ====================== BUSCA PRINCIPAL ======================
@@ -178,23 +365,58 @@ async function fetchMultipleProcesses() {
     try {
         let results = [];
         if (!processText) {
+            const confirmSearch = confirm('Deseja buscar TODAS as comunicações no período selecionado? Isso pode retornar muitos resultados e levar mais tempo.');
+            if (!confirmSearch) return;
+
+            showStatus('Buscando todas as comunicações no período...', 'loading');
+            const startTime = performance.now();
             results = await fetchAllProcesses(startDate, endDate);
             if (results.error) throw new Error(results.error);
-        } else {
-            const numbers = extractProcessNumbers(processText);
-            for (let i = 0; i < numbers.length; i++) {
-                const r = await fetchSingleProcess(numbers[i], startDate, endDate);
-                if (r.error) throw new Error(r.error);
-                results.push({ numeroprocessocommascara: numbers[i], ...r });
-                if (i < numbers.length - 1) await new Promise(r => setTimeout(r, 1000));
-            }
+
+            const processMap = {};
+            results.forEach(item => {
+                const processNum = item.numeroprocessocommascara || item.numeroProcesso || 'Desconhecido';
+                if (!processMap[processNum]) processMap[processNum] = { processNumber: processNum, results: [] };
+                processMap[processNum].results.push(item);
+            });
+            const formattedResults = Object.values(processMap);
+            const totalTime = Math.round(performance.now() - startTime);
+            showStatus(`Consulta concluída! ${formattedResults.length} processos encontrados (${results.length} comunicações) em ${totalTime}ms`, 'success');
+            displayResults(formattedResults);
+            return;
         }
 
-        if (!results || (Array.isArray(results) && results.length === 0))
-            return showMainStatus('Nenhum resultado encontrado.', 'info');
+        // Fluxo normal com números de processo
+        const startTime = performance.now();
+        showStatus('Extraindo números de processo...', 'loading');
 
-        const formatted = formatResults(results);
-        displayResults(formatted);
+        const processNumbers = extractProcessNumbers(processText);
+        if (processNumbers.length === 0) {
+            showStatus('Nenhum número de processo válido encontrado.', 'error');
+            return;
+        }
+
+        showStatus(`Encontrados ${processNumbers.length} processos. Iniciando consultas...`, 'loading');
+        const processResults = [];
+        for (let i = 0; i < processNumbers.length; i++) {
+            const processNumber = processNumbers[i];
+            const progress = Math.round(((i + 1) / processNumbers.length) * 100);
+            showStatus(`Consultando ${i + 1}/${processNumbers.length} (${progress}%): ${processNumber}`, 'loading');
+            const results = await fetchSingleProcess(processNumber, startDate, endDate);
+            if (results.error) {
+                processResults.push({ processNumber, results: [], error: results.error });
+            } else {
+                processResults.push({ processNumber, results });
+            }
+            if (i < processNumbers.length - 1) await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        const filteredResults = applyFilters(processResults);
+        const totalTime = Math.round(performance.now() - startTime);
+        document.getElementById('responseTime').textContent = `${totalTime}ms`;
+        showStatus(`Consulta concluída! ${filteredResults.filter(p => p.results.length > 0).length}/${processNumbers.length} processos com resultados (${filteredResults.reduce((s,p)=>s+(p.results?.length||0),0)} comunicações)`, 'success');
+        displayResults(filteredResults);
+
     } catch (error) {
         showMainStatus(error.message, 'error');
     } finally {
@@ -203,156 +425,8 @@ async function fetchMultipleProcesses() {
     }
 }
 
-async function fetchAllProcesses(start, end) {
-    const params = new URLSearchParams({ dataDisponibilizacaoInicio: start, dataDisponibilizacaoFim: end });
-    const add = (id, key) => { const val = document.getElementById(id).value.trim(); if (val) params.append(key, val); };
-    add('filterTribunal','siglaTribunal');
-    add('filterOrgao','nomeOrgao');
-    add('filterTipo','tipoComunicacao');
-    add('filterNomeParte','nomeParte');
-    add('filterNomeAdvogado','nomeAdvogado');
-    add('filterNumeroOab','numeroOab');
-    add('filterUfOab','ufOab');
-    add('filterMeio','meio');
-    add('itensPorPagina','itensPorPagina');
-    return await fetchFromAPI(`${API_BASE_URL}?${params.toString()}`);
-}
-
-async function fetchSingleProcess(num, start, end) {
-    const params = new URLSearchParams({ numeroProcesso: num, dataDisponibilizacaoInicio: start, dataDisponibilizacaoFim: end });
-    return await fetchFromAPI(`${API_BASE_URL}?${params.toString()}`);
-}
-
-function formatResults(results) {
-    if (!Array.isArray(results)) return [];
-    const map = {};
-    results.forEach(item => {
-        const num = item.numeroprocessocommascara || item.numeroProcesso || 'Desconhecido';
-        if (!map[num]) map[num] = { processNumber: num, results: [] };
-        map[num].results.push(item);
-    });
-    return Object.values(map);
-}
-
-// ====================== DISPLAY DETALHADO ======================
-function displayResults(processResults) {
-    const resultsEl = document.getElementById('results');
-    const statsEl = document.getElementById('stats');
-    const exportBtn = document.getElementById('exportBtn');
-    allResults = processResults;
-
-    statsEl.classList.remove('hidden');
-    document.getElementById('totalProcesses').textContent = processResults.length;
-    document.getElementById('totalResults').textContent = processResults.reduce((s, p) => s + (p.results?.length || 0), 0);
-    document.getElementById('dataSize').textContent = formatFileSize(new Blob([JSON.stringify(processResults)]).size);
-    exportBtn.disabled = false;
-
-    if (processResults.length === 0) return showMainStatus('Nenhum processo encontrado.', 'info');
-
-    resultsEl.innerHTML = '';
-    processResults.forEach(processData => {
-        const card = createProcessCard(processData);
-        resultsEl.appendChild(card);
-    });
-}
-
-// ======== CRIAR CARDS COMO ANTES ========
-function createProcessCard(processData) {
-    const card = document.createElement('div');
-    card.className = 'process-card';
-
-    const header = document.createElement('div');
-    header.className = 'process-header';
-
-    header.innerHTML = `
-        <div class="process-number">
-            <i class="fas fa-file"></i> ${processData.processNumber}
-        </div>
-        <div class="process-actions">
-            <button onclick="copyToClipboard('${processData.processNumber}')" title="Copiar número">
-                <i class="fas fa-copy"></i>
-            </button>
-            <button onclick="exportProcess('${processData.processNumber}')" title="Exportar CSV">
-                <i class="fas fa-file-export"></i>
-            </button>
-            <button onclick="shareProcess('${processData.processNumber}')" title="Compartilhar">
-                <i class="fas fa-share-alt"></i>
-            </button>
-        </div>
-    `;
-    card.appendChild(header);
-
-    processData.results.forEach(item => {
-        const itemDiv = createCommunicationItem(item);
-        card.appendChild(itemDiv);
-    });
-
-    return card;
-}
-
-function createCommunicationItem(item) {
-    const div = document.createElement('div');
-    div.className = 'communication-item';
-    div.innerHTML = `
-        <p><strong>Tribunal:</strong> ${item.siglaTribunal || '—'}</p>
-        <p><strong>Órgão:</strong> ${item.nomeOrgao || '—'}</p>
-        <p><strong>Tipo:</strong> ${item.tipoComunicacao || '—'}</p>
-        <p><strong>Data:</strong> ${item.dataDisponibilizacao || '—'}</p>
-        <p><strong>Meio:</strong> ${item.meio || '—'}</p>
-        <p><strong>Destinatário:</strong> ${item.nomeDestinatario || '—'}</p>
-        <p><strong>Assunto:</strong> ${item.assunto || '—'}</p>
-    `;
-    return div;
-}
-
-// ====================== UTILITÁRIOS ======================
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => showToast('Copiado para a área de transferência', 'success'));
-}
-
-function exportProcess(processNumber) {
-    const data = allResults.find(p => p.processNumber === processNumber)?.results || [];
-    if (!data.length) return showToast('Nada para exportar', 'error');
-    const csv = jsonToCSV(data);
-    downloadFile(csv, `${processNumber}.csv`, 'text/csv');
-}
-
-function shareProcess(processNumber) {
-    const url = new URL(window.location.href);
-    url.searchParams.set('processNumbers', processNumber);
-    const shareUrl = url.toString();
-    navigator.clipboard.writeText(shareUrl).then(() => showToast('Link copiado! Você pode compartilhar em redes sociais', 'success'));
-}
-
-function jsonToCSV(objArray) {
-    const array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
-    const headers = Object.keys(array[0] || {});
-    const csv = [headers.join(',')];
-    array.forEach(row => {
-        csv.push(headers.map(h => `"${(row[h] || '').toString().replace(/"/g, '""')}"`).join(','));
-    });
-    return csv.join('\r\n');
-}
-
-function downloadFile(content, fileName, type) {
-    const blob = new Blob([content], { type });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-}
-
-function formatFileSize(bytes) {
-    const sizes = ['B','KB','MB','GB','TB'];
-    if (bytes === 0) return '0 B';
-    const i = Math.floor(Math.log(bytes)/Math.log(1024));
-    return (bytes / Math.pow(1024,i)).toFixed(2) + ' ' + sizes[i];
-}
-
-// ====================== SALVAR / RECUPERAR BUSCAS ======================
-function saveCurrentSearch() {
+// ====================== SALVAMENTO DE BUSCAS ======================
+function getCurrentSearchParams() {
     const params = new URLSearchParams();
     const fields = [
         "processNumbers","startDate","endDate",
@@ -365,13 +439,62 @@ function saveCurrentSearch() {
         const el = document.getElementById(id);
         if (el && el.value.trim()) params.set(id, el.value.trim());
     });
-    localStorage.setItem("lastSearchParams", params.toString());
-    showToast('Busca salva!', 'success');
+    return params;
+}
+
+async function saveCurrentSearch() {
+    const params = getCurrentSearchParams();
+    if (!params.toString()) return showToast("Nenhum filtro preenchido.", "error");
+
+    const name = await showModal({
+        title: "Salvar Busca",
+        message: "Dê um nome para identificar esta busca:",
+        input: true,
+        defaultValue: new Date().toLocaleString("pt-BR")
+    });
+    if (!name) return;
+
+    const saved = JSON.parse(localStorage.getItem("savedSearches") || "[]");
+    saved.push({ name, query: params.toString(), date: Date.now() });
+    localStorage.setItem("savedSearches", JSON.stringify(saved));
+    renderSavedSearches();
+    showToast("Busca salva.", "success");
 }
 
 function renderSavedSearches() {
-    const saved = localStorage.getItem("lastSearchParams");
-    if (!saved) return;
-    const container = document.getElementById('savedSearches');
-    container.innerHTML = `<button onclick="restoreFiltersFromURLorLocal()">Restaurar busca salva</button>`;
+    const container = document.getElementById("savedSearchesList");
+    if (!container) return;
+    const saved = JSON.parse(localStorage.getItem("savedSearches") || "[]");
+    if (saved.length === 0) {
+        container.innerHTML = "<p class='empty-saved'>Nenhuma busca salva.</p>";
+        return;
+    }
+    container.innerHTML = saved.map((s, i) => `
+        <div class="saved-search-item">
+            <span class="saved-name" title="${s.name}">${s.name}</span>
+            <div class="saved-actions">
+                <button class="icon-btn" onclick="loadSavedSearch(${i})" title="Carregar"><i class="fas fa-play"></i></button>
+                <button class="icon-btn" onclick="deleteSavedSearch(${i})" title="Excluir"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>`).join('');
+}
+
+function loadSavedSearch(index) {
+    const saved = JSON.parse(localStorage.getItem("savedSearches") || "[]");
+    const search = saved[index];
+    if (!search) return;
+    const params = new URLSearchParams(search.query);
+    for (const [key, value] of params.entries()) {
+        const el = document.getElementById(key);
+        if (el) el.value = value;
+    }
+    updateURLFromFilters();
+    showToast(`Busca "${search.name}" carregada.`, "success");
+}
+
+function deleteSavedSearch(index) {
+    const saved = JSON.parse(localStorage.getItem("savedSearches") || "[]");
+    saved.splice(index, 1);
+    localStorage.setItem("savedSearches", JSON.stringify(saved));
+    renderSavedSearches();
 }
