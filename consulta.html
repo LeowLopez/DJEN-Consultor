@@ -16,7 +16,10 @@
                 <i class="fas fa-gavel"></i>
                 <span>DJEN Consultor</span>
             </div>
-            <div class="nav-links">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="nav-links" id="navLinks">
                 <a href="index.html">Início</a>
                 <a href="consulta.html" class="active">Consultar</a>
                 <a href="sobre.html">Sobre</a>
@@ -64,9 +67,13 @@
                         </div>
                     </div>
                     <div class="date-presets">
-                        <button class="btn btn-small" onclick="setDatePreset('today')">Hoje</button>
-                        <button class="btn btn-small" onclick="setDatePreset('week')">7 dias</button>
-                        <button class="btn btn-small" onclick="setDatePreset('month')">30 dias</button>
+                        <p>Buscar desde:</p>
+                        <p>
+                            <button class="btn btn-small" onclick="setDatePreset('yesterday')">Ontem</button>
+                            <button class="btn btn-small" onclick="setDatePreset('today')">Hoje</button>
+                            <button class="btn btn-small" onclick="setDatePreset('week')">7 dias</button>
+                            <button class="btn btn-small" onclick="setDatePreset('month')">30 dias</button>
+                        </p>
                     </div>
                 </div>
 
@@ -246,6 +253,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="theme.js"></script>
     <script src="consulta.js"></script>
+    <script src="menu.js"></script>
 
 </body>
 

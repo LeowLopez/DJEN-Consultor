@@ -5,13 +5,42 @@ let allResults = [];
 window.addEventListener('load', () => {
     const today = new Date();
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(today.getDate() - 7);
-    document.getElementById('startDate').value = sevenDaysAgo.toISOString().split('T')[0];
+    // sevenDaysAgo.setDate(today.getDate() - 7);
+    document.getElementById('startDate').value = today.toISOString().split('T')[0];
     document.getElementById('endDate').value = today.toISOString().split('T')[0];
 });
 
 window.addEventListener('DOMContentLoaded', () => {
     renderSavedSearches();
+    // Verifica se há parâmetros na URL
+    const params = new URLSearchParams(window.location.search);
+    let hasParams = false;
+
+    const fields = [
+        "processNumbers", "startDate", "endDate",
+        "filterTribunal", "filterOrgao", "filterTipo",
+        "filterNomeParte", "filterNomeAdvogado",
+        "filterNumeroOab", "filterUfOab", "filterMeio",
+        "itensPorPagina"
+    ];
+
+    fields.forEach(id => {
+        const value = params.get(id);
+        if (value) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.value = value;
+                hasParams = true;
+            }
+        }
+    });
+
+    // Se houver parâmetros, executa a busca automaticamente
+    if (hasParams) {
+        setTimeout(() => {
+            fetchMultipleProcesses();
+        }, 500);
+    }
 });
 
 // ====================== FUNÇÕES DE INTERFACE ======================
@@ -42,6 +71,9 @@ function setDatePreset(preset) {
     switch (preset) {
         case 'today':
             startDate = new Date();
+            break;
+        case 'yesterday':
+            startDate.setDate(endDate.getDate() - 1);
             break;
         case 'week':
             startDate.setDate(endDate.getDate() - 7);
@@ -171,7 +203,17 @@ function updateURLFromFilters() {
     ];
     fields.forEach(id => {
         const el = document.getElementById(id);
-        if (el && el.value.trim()) params.set(id, el.value.trim());
+        if (el && el.value.trim()) {
+            // Se for processNumbers, extrai apenas os números válidos
+            if (id === 'processNumbers') {
+                const extracted = extractProcessNumbers(el.value);
+                if (extracted.length > 0) {
+                    params.set(id, extracted.join('\n'));
+                }
+            } else {
+                params.set(id, el.value.trim());
+            }
+        }
     });
     history.replaceState(null, "", "?" + params.toString());
 }
@@ -284,28 +326,33 @@ function createCommunicationItem(item, index) {
     const typeTag = getTypeTag(item.tipoComunicacao);
 
     div.innerHTML = `
-        <div class="communication-header">
-            <div>
-                <div class="communication-title">
-                    <i class="fas fa-file-lines"></i>
-                    Comunicação ${index}
-                </div>
-                <div class="communication-meta">
-                    ${item.data_disponibilizacao ? `<span class="meta-item"><i class="fas fa-calendar"></i>${item.data_disponibilizacao}</span>` : ''}
-                    ${item.siglaTribunal ? `<span class="meta-item"><i class="fas fa-building"></i>${item.siglaTribunal}</span>` : ''}
-                </div>
+    <div class="communication-header">
+        <div>
+            <div class="communication-title">
+                <i class="fas fa-file-lines"></i>
+                Comunicação ${index}
             </div>
-            <div class="communication-tags">${typeTag}</div>
+            <div class="communication-meta">
+                ${item.data_disponibilizacao ? `<span class="meta-item"><i class="fas fa-calendar"></i>${item.data_disponibilizacao}</span>` : ''}
+                ${item.siglaTribunal ? `<span class="meta-item"><i class="fas fa-building"></i>${item.siglaTribunal}</span>` : ''}
+            </div>
         </div>
-        <div class="communication-content">
-            ${item.nomeOrgao ? `<div class="info-row"><span class="info-label">Órgão:</span><span class="info-value">${item.nomeOrgao}</span></div>` : ''}
-            ${item.nomeClasse ? `<div class="info-row"><span class="info-label">Classe:</span><span class="info-value">${item.nomeClasse}</span></div>` : ''}
-            ${item.meiocompleto ? `<div class="info-row"><span class="info-label">Meio:</span><span class="info-value">${item.meiocompleto}</span></div>` : ''}
-            ${item.link ? `<div class="info-row"><span class="info-label">Link:</span><a href="${item.link}" target="_blank" class="communication-link">Acessar documento <i class="fas fa-external-link-alt"></i></a></div>` : ''}
-            ${item.texto && item.texto !== 'Não foi possível extrair conteúdo do documento' ? `<div class="communication-text">${item.texto}</div>` : ''}
-            ${item.destinatarios && item.destinatarios.length > 0 ? `<div class="destinatarios-section"><div class="destinatarios-title">Destinatários</div><div class="destinatarios-list">${item.destinatarios.map(d => `<span class="destinatario-badge">${d.nome} ${d.polo ? `(${d.polo})` : ''}</span>`).join('')}</div></div>` : ''}
-            ${item.destinatarioadvogados && item.destinatarioadvogados.length > 0 ? `<div class="destinatarios-section"><div class="destinatarios-title">Advogados</div><div class="destinatarios-list">${item.destinatarioadvogados.map(a => `<span class="destinatario-badge">${a.advogado.nome} - ${a.advogado.numero_oab}/${a.advogado.uf_oab}</span>`).join('')}</div></div>` : ''}
-        </div>`;
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="communication-tags">${typeTag}</div>
+            <button class="icon-btn" onclick="exportSingleCommunication('${item.numeroprocessocommascara || item.numeroProcesso}', ${index - 1})" title="Baixar PDF desta comunicação">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+        </div>
+    </div>
+    <div class="communication-content">
+        ${item.nomeOrgao ? `<div class="info-row"><span class="info-label">Órgão:</span><span class="info-value">${item.nomeOrgao}</span></div>` : ''}
+        ${item.nomeClasse ? `<div class="info-row"><span class="info-label">Classe:</span><span class="info-value">${item.nomeClasse}</span></div>` : ''}
+        ${item.meiocompleto ? `<div class="info-row"><span class="info-label">Meio:</span><span class="info-value">${item.meiocompleto}</span></div>` : ''}
+        ${item.link ? `<div class="info-row"><span class="info-label">Link:</span><a href="${item.link}" target="_blank" class="communication-link">Acessar documento <i class="fas fa-external-link-alt"></i></a></div>` : ''}
+        ${item.texto && item.texto !== 'Não foi possível extrair conteúdo do documento' ? `<div class="communication-text">${item.texto}</div>` : ''}
+        ${item.destinatarios && item.destinatarios.length > 0 ? `<div class="destinatarios-section"><div class="destinatarios-title">Destinatários</div><div class="destinatarios-list">${item.destinatarios.map(d => `<span class="destinatario-badge">${d.nome} ${d.polo ? `(${d.polo})` : ''}</span>`).join('')}</div></div>` : ''}
+        ${item.destinatarioadvogados && item.destinatarioadvogados.length > 0 ? `<div class="destinatarios-section"><div class="destinatarios-title">Advogados</div><div class="destinatarios-list">${item.destinatarioadvogados.map(a => `<span class="destinatario-badge">${a.advogado.nome} - ${a.advogado.numero_oab}/${a.advogado.uf_oab}</span>`).join('')}</div></div>` : ''}
+    </div>`;
     return div;
 }
 
@@ -328,7 +375,7 @@ function createProcessCard(processData) {
             <div class="process-number"><i class="fas fa-file"></i>${processData.processNumber}<span class="process-badge">${processData.results.length}</span></div>
             <div class="process-actions">
                 <button class="icon-btn" onclick="copyToClipboard('${processData.processNumber}')" title="Copiar número"><i class="fas fa-copy"></i></button>
-                <button class="icon-btn" onclick="exportProcess('${processData.processNumber}')" title="Exportar processo"><i class="fas fa-download"></i></button>
+                <button class="icon-btn" onclick="exportSingleCommunication('${processData.processNumber}')" title="Exportar processo"><i class="fas fa-download"></i></button>
             </div>`;
 
         const body = document.createElement('div');
@@ -423,47 +470,70 @@ function exportToPDF(results, timestamp) {
 
     let yPosition = 20;
     const pageHeight = doc.internal.pageSize.height;
+    const pageWidth = doc.internal.pageSize.width;
     const margin = 20;
     const lineHeight = 7;
+    const maxWidth = pageWidth - (margin * 2);
+
+    // Adiciona o link da pesquisa no rodapé de cada página
+    const searchUrl = window.location.href;
+    const addFooter = (pageNum) => {
+        doc.setFontSize(8);
+        doc.setTextColor(128, 128, 128);
+        doc.text(`Link da pesquisa: ${searchUrl}`, margin, pageHeight - 10, { maxWidth: maxWidth });
+        doc.text(`Página ${pageNum}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+    };
+
+    let pageNum = 1;
 
     // Título
     doc.setFontSize(16);
+    doc.setTextColor(6, 95, 70);
     doc.text('DJEN Consultor - Resultados', margin, yPosition);
     yPosition += 10;
 
     doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
     doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, margin, yPosition);
     yPosition += 10;
 
     // Processos
     results.forEach((process, index) => {
-        if (yPosition > pageHeight - 40) {
+        if (yPosition > pageHeight - 50) {
+            addFooter(pageNum);
             doc.addPage();
+            pageNum++;
             yPosition = 20;
         }
 
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
+        doc.setTextColor(6, 95, 70);
         doc.text(`Processo: ${process.processNumber}`, margin, yPosition);
         yPosition += lineHeight;
 
         if (process.results && process.results.length > 0) {
             doc.setFontSize(10);
             doc.setFont(undefined, 'normal');
+            doc.setTextColor(0, 0, 0);
             doc.text(`Total de comunicações: ${process.results.length}`, margin, yPosition);
             yPosition += lineHeight + 3;
 
             process.results.forEach((item, idx) => {
-                if (yPosition > pageHeight - 40) {
+                if (yPosition > pageHeight - 50) {
+                    addFooter(pageNum);
                     doc.addPage();
+                    pageNum++;
                     yPosition = 20;
                 }
 
                 doc.setFont(undefined, 'bold');
+                doc.setTextColor(6, 95, 70);
                 doc.text(`Comunicação ${idx + 1}:`, margin + 5, yPosition);
                 yPosition += lineHeight;
 
                 doc.setFont(undefined, 'normal');
+                doc.setTextColor(0, 0, 0);
 
                 if (item.data_disponibilizacao) {
                     doc.text(`Data: ${item.data_disponibilizacao}`, margin + 10, yPosition);
@@ -476,7 +546,7 @@ function exportToPDF(results, timestamp) {
                 }
 
                 if (item.nomeOrgao) {
-                    const orgaoLines = doc.splitTextToSize(`Órgão: ${item.nomeOrgao}`, 170);
+                    const orgaoLines = doc.splitTextToSize(`Órgão: ${item.nomeOrgao}`, maxWidth - 10);
                     doc.text(orgaoLines, margin + 10, yPosition);
                     yPosition += lineHeight * orgaoLines.length;
                 }
@@ -486,17 +556,74 @@ function exportToPDF(results, timestamp) {
                     yPosition += lineHeight;
                 }
 
+                if (item.nomeClasse) {
+                    doc.text(`Classe: ${item.nomeClasse}`, margin + 10, yPosition);
+                    yPosition += lineHeight;
+                }
+
+                if (item.meiocompleto) {
+                    const meioLines = doc.splitTextToSize(`Meio: ${item.meiocompleto}`, maxWidth - 10);
+                    doc.text(meioLines, margin + 10, yPosition);
+                    yPosition += lineHeight * meioLines.length;
+                }
+
+                if (item.link) {
+                    doc.setTextColor(6, 95, 70);
+                    const linkLines = doc.splitTextToSize(`Link: ${item.link}`, maxWidth - 10);
+                    doc.text(linkLines, margin + 10, yPosition);
+                    doc.setTextColor(0, 0, 0);
+                    yPosition += lineHeight * linkLines.length;
+                }
+
+                // ADICIONA O TEXTO DA COMUNICAÇÃO
+                if (item.texto && item.texto !== 'Não foi possível extrair conteúdo do documento') {
+                    yPosition += 3;
+
+                    if (yPosition > pageHeight - 50) {
+                        addFooter(pageNum);
+                        doc.addPage();
+                        pageNum++;
+                        yPosition = 20;
+                    }
+
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`Conteúdo:`, margin + 10, yPosition);
+                    yPosition += lineHeight;
+
+                    doc.setFont(undefined, 'normal');
+                    doc.setFontSize(9);
+                    const textoLines = doc.splitTextToSize(item.texto, maxWidth - 10);
+
+                    textoLines.forEach(line => {
+                        if (yPosition > pageHeight - 50) {
+                            addFooter(pageNum);
+                            doc.addPage();
+                            pageNum++;
+                            yPosition = 20;
+                        }
+                        doc.text(line, margin + 10, yPosition);
+                        yPosition += lineHeight;
+                    });
+
+                    doc.setFontSize(10);
+                    yPosition += 3;
+                }
+
                 yPosition += 3;
             });
         } else {
             doc.setFontSize(10);
             doc.setFont(undefined, 'italic');
+            doc.setTextColor(128, 128, 128);
             doc.text('Nenhuma comunicação encontrada', margin + 5, yPosition);
             yPosition += lineHeight;
         }
 
         yPosition += 5;
     });
+
+    // Adiciona rodapé na última página
+    addFooter(pageNum);
 
     doc.save(`djen-consulta-${timestamp}.pdf`);
     showToast('Resultados exportados em PDF!', 'success');
@@ -512,6 +639,182 @@ function exportProcess(processNumber) {
     link.click();
     URL.revokeObjectURL(link.href);
     showToast('Processo exportado com sucesso!', 'success');
+}
+
+function exportSingleCommunication(processNumber, commIndex) {
+    const processData = allResults.find(p => p.processNumber === processNumber);
+    if (!processData || !processData.results[commIndex]) return;
+
+    const item = processData.results[commIndex];
+    const timestamp = new Date().toISOString().split('T')[0];
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    let yPosition = 20;
+    const pageHeight = doc.internal.pageSize.height;
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 20;
+    const lineHeight = 7;
+    const maxWidth = pageWidth - (margin * 2);
+
+    // Rodapé com link
+    const searchUrl = window.location.href;
+    const addFooter = () => {
+        doc.setFontSize(8);
+        doc.setTextColor(128, 128, 128);
+        doc.text(`Link da pesquisa: ${searchUrl}`, margin, pageHeight - 10, { maxWidth: maxWidth });
+    };
+
+    // Título
+    doc.setFontSize(16);
+    doc.setTextColor(6, 95, 70);
+    doc.text('DJEN Consultor - Comunicação', margin, yPosition);
+    yPosition += 10;
+
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, margin, yPosition);
+    yPosition += 10;
+
+    // Processo
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(6, 95, 70);
+    doc.text(`Processo: ${processNumber}`, margin, yPosition);
+    yPosition += lineHeight + 3;
+
+    // Comunicação
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(0, 0, 0);
+
+    if (item.data_disponibilizacao) {
+        doc.text(`Data: ${item.data_disponibilizacao}`, margin, yPosition);
+        yPosition += lineHeight;
+    }
+
+    if (item.siglaTribunal) {
+        doc.text(`Tribunal: ${item.siglaTribunal}`, margin, yPosition);
+        yPosition += lineHeight;
+    }
+
+    if (item.nomeOrgao) {
+        const orgaoLines = doc.splitTextToSize(`Órgão: ${item.nomeOrgao}`, maxWidth);
+        doc.text(orgaoLines, margin, yPosition);
+        yPosition += lineHeight * orgaoLines.length;
+    }
+
+    if (item.tipoComunicacao) {
+        doc.text(`Tipo: ${item.tipoComunicacao}`, margin, yPosition);
+        yPosition += lineHeight;
+    }
+
+    if (item.nomeClasse) {
+        doc.text(`Classe: ${item.nomeClasse}`, margin, yPosition);
+        yPosition += lineHeight;
+    }
+
+    if (item.meiocompleto) {
+        const meioLines = doc.splitTextToSize(`Meio: ${item.meiocompleto}`, maxWidth);
+        doc.text(meioLines, margin, yPosition);
+        yPosition += lineHeight * meioLines.length;
+    }
+
+    if (item.link) {
+        doc.setTextColor(6, 95, 70);
+        const linkLines = doc.splitTextToSize(`Link: ${item.link}`, maxWidth);
+        doc.text(linkLines, margin, yPosition);
+        doc.setTextColor(0, 0, 0);
+        yPosition += lineHeight * linkLines.length;
+    }
+
+    // Texto da comunicação
+    if (item.texto && item.texto !== 'Não foi possível extrair conteúdo do documento') {
+        yPosition += 5;
+
+        if (yPosition > pageHeight - 50) {
+            addFooter();
+            doc.addPage();
+            yPosition = 20;
+        }
+
+        doc.setFont(undefined, 'bold');
+        doc.text(`Conteúdo:`, margin, yPosition);
+        yPosition += lineHeight;
+
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(9);
+        const textoLines = doc.splitTextToSize(item.texto, maxWidth);
+
+        textoLines.forEach(line => {
+            if (yPosition > pageHeight - 50) {
+                addFooter();
+                doc.addPage();
+                yPosition = 20;
+            }
+            doc.text(line, margin, yPosition);
+            yPosition += lineHeight;
+        });
+    }
+
+    // Destinatários
+    if (item.destinatarios && item.destinatarios.length > 0) {
+        yPosition += 5;
+        if (yPosition > pageHeight - 50) {
+            addFooter();
+            doc.addPage();
+            yPosition = 20;
+        }
+
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text('Destinatários:', margin, yPosition);
+        yPosition += lineHeight;
+
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(9);
+        item.destinatarios.forEach(d => {
+            if (yPosition > pageHeight - 50) {
+                addFooter();
+                doc.addPage();
+                yPosition = 20;
+            }
+            doc.text(`• ${d.nome} ${d.polo ? `(${d.polo})` : ''}`, margin + 5, yPosition);
+            yPosition += lineHeight;
+        });
+    }
+
+    // Advogados
+    if (item.destinatarioadvogados && item.destinatarioadvogados.length > 0) {
+        yPosition += 5;
+        if (yPosition > pageHeight - 50) {
+            addFooter();
+            doc.addPage();
+            yPosition = 20;
+        }
+
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text('Advogados:', margin, yPosition);
+        yPosition += lineHeight;
+
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(9);
+        item.destinatarioadvogados.forEach(a => {
+            if (yPosition > pageHeight - 50) {
+                addFooter();
+                doc.addPage();
+                yPosition = 20;
+            }
+            doc.text(`• ${a.advogado.nome} - ${a.advogado.numero_oab}/${a.advogado.uf_oab}`, margin + 5, yPosition);
+            yPosition += lineHeight;
+        });
+    }
+
+    addFooter();
+    doc.save(`comunicacao-${processNumber}-${commIndex + 1}-${timestamp}.pdf`);
+    showToast('Comunicação exportada em PDF!', 'success');
 }
 
 // ====================== COMPARTILHAMENTO ======================
@@ -716,6 +1019,11 @@ function loadSavedSearch(index) {
     }
     updateURLFromFilters();
     showToast(`Busca "${search.name}" carregada.`, "success");
+
+    // Executa a busca automaticamente
+    setTimeout(() => {
+        fetchMultipleProcesses();
+    }, 500);
 }
 
 function shareSavedSearch(index) {
@@ -817,7 +1125,33 @@ function filterPageResults() {
 
 function clearPageFilter() {
     document.getElementById('pageFilter').value = '';
-    filterPageResults();
+
+    // Remove todos os highlights e data-original
+    const processCards = document.querySelectorAll('.process-card');
+    processCards.forEach(card => {
+        card.style.display = 'block';
+
+        // Restaura número do processo
+        const processNumEl = card.querySelector('.process-number');
+        if (processNumEl && processNumEl.getAttribute('data-original')) {
+            processNumEl.innerHTML = processNumEl.getAttribute('data-original');
+            processNumEl.removeAttribute('data-original');
+        }
+
+        // Restaura todas as comunicações
+        const communications = card.querySelectorAll('.communication-item');
+        communications.forEach(comm => {
+            comm.style.display = 'block';
+            if (comm.getAttribute('data-original')) {
+                comm.innerHTML = comm.getAttribute('data-original');
+                comm.removeAttribute('data-original');
+            }
+        });
+    });
+
+    // Limpa contador e esconde botão de limpar
+    document.getElementById('filterCount').textContent = '';
+    document.getElementById('clearPageFilter').style.display = 'none';
 }
 
 // Event listeners para o filtro de página
