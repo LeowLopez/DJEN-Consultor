@@ -177,6 +177,16 @@
         <main class="main-content">
             <div class="content-header">
                 <h1>Resultados da Consulta</h1>
+                <div class="page-filter-container">
+                    <div class="input-group">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="pageFilter" placeholder="Filtrar resultados na página...">
+                        <button class="btn-clear" id="clearPageFilter" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <span id="filterCount" class="filter-count"></span>
+                </div>
                 <div class="content-actions">
                     <button class="btn btn-secondary" onclick="showExportMenu()" id="exportBtn" disabled>
                         <i class="fas fa-download"></i> Exportar
@@ -236,7 +246,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="theme.js"></script>
     <script src="consulta.js"></script>
-    
+
 </body>
 
 </html>

@@ -736,3 +736,100 @@ function deleteSavedSearch(index) {
     renderSavedSearches();
     showToast("Busca excluída.", "success");
 }
+
+// ====================== FILTRO DE PÁGINA ======================
+function highlightText(text, search) {
+    if (!search || !text) return text;
+    const regex = new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+}
+
+function filterPageResults() {
+    const searchTerm = document.getElementById('pageFilter').value.trim().toLowerCase();
+    const clearBtn = document.getElementById('clearPageFilter');
+    const filterCount = document.getElementById('filterCount');
+    const processCards = document.querySelectorAll('.process-card');
+
+    clearBtn.style.display = searchTerm ? 'block' : 'none';
+
+    if (!searchTerm) {
+        processCards.forEach(card => card.style.display = 'block');
+        filterCount.textContent = '';
+        return;
+    }
+
+    let visibleCount = 0;
+    let totalCommunications = 0;
+
+    processCards.forEach(card => {
+        const processNumber = card.querySelector('.process-number').textContent.toLowerCase();
+        const communications = card.querySelectorAll('.communication-item');
+        let hasVisibleComm = false;
+
+        // Verifica se o número do processo contém o termo
+        const processMatches = processNumber.includes(searchTerm);
+
+        communications.forEach(comm => {
+            const originalContent = comm.getAttribute('data-original') || comm.innerHTML;
+            if (!comm.getAttribute('data-original')) {
+                comm.setAttribute('data-original', comm.innerHTML);
+            }
+
+            const textContent = comm.textContent.toLowerCase();
+            const matches = textContent.includes(searchTerm) || processMatches;
+
+            if (matches) {
+                // Restaura conteúdo original e aplica highlight
+                comm.innerHTML = originalContent;
+                const allText = comm.querySelectorAll('.info-value, .communication-text, .destinatario-badge');
+                allText.forEach(el => {
+                    el.innerHTML = highlightText(el.textContent, searchTerm);
+                });
+                comm.style.display = 'block';
+                hasVisibleComm = true;
+                totalCommunications++;
+            } else {
+                comm.style.display = 'none';
+            }
+        });
+
+        // Se o número do processo bate, mostra o card mesmo sem comunicações visíveis
+        if (hasVisibleComm || processMatches) {
+            card.style.display = 'block';
+            visibleCount++;
+
+            // Destaca o número do processo se houver match
+            if (processMatches) {
+                const processNumEl = card.querySelector('.process-number');
+                const originalText = processNumEl.getAttribute('data-original') || processNumEl.innerHTML;
+                if (!processNumEl.getAttribute('data-original')) {
+                    processNumEl.setAttribute('data-original', originalText);
+                }
+                processNumEl.innerHTML = highlightText(processNumEl.textContent, searchTerm);
+            }
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    filterCount.textContent = `${visibleCount} processo(s), ${totalCommunications} comunicação(ões)`;
+}
+
+function clearPageFilter() {
+    document.getElementById('pageFilter').value = '';
+    filterPageResults();
+}
+
+// Event listeners para o filtro de página
+document.addEventListener('DOMContentLoaded', () => {
+    const pageFilterInput = document.getElementById('pageFilter');
+    const clearBtn = document.getElementById('clearPageFilter');
+
+    if (pageFilterInput) {
+        pageFilterInput.addEventListener('input', filterPageResults);
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearPageFilter);
+    }
+});
