@@ -4,7 +4,7 @@ let allResults = [];
 // ====================== INICIALIZAÇÃO ======================
 window.addEventListener('load', () => {
     const today = new Date();
-    const sevenDaysAgo = new Date();
+    // const sevenDaysAgo = new Date();
     // sevenDaysAgo.setDate(today.getDate() - 7);
     document.getElementById('startDate').value = today.toISOString().split('T')[0];
     document.getElementById('endDate').value = today.toISOString().split('T')[0];
@@ -649,10 +649,10 @@ function exportSingleCommunication(processNumber, commIndex) {
         showToast('Erro: Comunicação não encontrada', 'error');
         return;
     }
-
+    
     const item = processData.results[commIndex];
     const timestamp = new Date().toISOString().split('T')[0];
-
+    
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
@@ -737,7 +737,7 @@ function exportSingleCommunication(processNumber, commIndex) {
     // Texto da comunicação
     if (item.texto && item.texto !== 'Não foi possível extrair conteúdo do documento') {
         yPosition += 5;
-
+        
         if (yPosition > pageHeight - 50) {
             addFooter();
             doc.addPage();
@@ -751,7 +751,7 @@ function exportSingleCommunication(processNumber, commIndex) {
         doc.setFont(undefined, 'normal');
         doc.setFontSize(9);
         const textoLines = doc.splitTextToSize(item.texto, maxWidth);
-
+        
         textoLines.forEach(line => {
             if (yPosition > pageHeight - 50) {
                 addFooter();

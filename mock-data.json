@@ -1,0 +1,146 @@
+{
+  "enabled": true,
+  "data": [
+    {
+      "processNumber": "5001928-95.2019.4.04.7109",
+      "results": [
+        {
+          "numeroprocessocommascara": "5001928-95.2019.4.04.7109",
+          "numeroProcesso": "50019289520194047109",
+          "data_disponibilizacao": "22/10/2024",
+          "siglaTribunal": "TRF4",
+          "nomeOrgao": "1ª Vara Federal de Santa Maria",
+          "tipoComunicacao": "Intimação",
+          "nomeClasse": "Ação Civil Pública",
+          "meiocompleto": "Diário Eletrônico",
+          "link": "https://exemplo.com/documento1.pdf",
+          "texto": "INTIMAÇÃO: Fica a parte autora intimada para se manifestar sobre os documentos juntados pela parte ré, no prazo de 15 (quinze) dias. A manifestação deverá ser apresentada por meio eletrônico, observando-se as normas do Código de Processo Civil. O não cumprimento do prazo poderá acarretar preclusão do direito de se manifestar sobre os referidos documentos.",
+          "destinatarios": [
+            { "nome": "JOÃO DA SILVA SANTOS", "polo": "Autor" },
+            { "nome": "MARIA OLIVEIRA COSTA", "polo": "Autor" }
+          ],
+          "destinatarioadvogados": [
+            {
+              "advogado": {
+                "nome": "CARLOS ROBERTO MENDES",
+                "numero_oab": "123456",
+                "uf_oab": "RS"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "processNumber": "0001234-56.2024.5.04.0001",
+      "results": [
+        {
+          "numeroprocessocommascara": "0001234-56.2024.5.04.0001",
+          "numeroProcesso": "00012345620245040001",
+          "data_disponibilizacao": "21/10/2024",
+          "siglaTribunal": "TRT4",
+          "nomeOrgao": "2ª Vara do Trabalho de Porto Alegre",
+          "tipoComunicacao": "Intimação",
+          "nomeClasse": "Reclamação Trabalhista",
+          "meiocompleto": "Diário Eletrônico",
+          "link": "https://exemplo.com/documento2.pdf",
+          "texto": "INTIMAÇÃO DA SENTENÇA: Vistos etc. DECIDO. Julgo PROCEDENTE EM PARTE o pedido inicial para condenar a reclamada ao pagamento de horas extras, considerando a jornada de trabalho comprovada nos autos. O valor da condenação será apurado em liquidação de sentença. Condeno a reclamada ao pagamento de honorários advocatícios no importe de 10% sobre o valor da condenação. Custas processuais pela reclamada. Intimem-se.",
+          "destinatarios": [
+            { "nome": "EMPRESA XYZ LTDA", "polo": "Reclamada" },
+            { "nome": "PEDRO HENRIQUE ALVES", "polo": "Reclamante" }
+          ],
+          "destinatarioadvogados": [
+            {
+              "advogado": {
+                "nome": "ANA PAULA FERREIRA",
+                "numero_oab": "789012",
+                "uf_oab": "RS"
+              }
+            },
+            {
+              "advogado": {
+                "nome": "ROBERTO SILVA JUNIOR",
+                "numero_oab": "345678",
+                "uf_oab": "SP"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "processNumber": "0123456-78.2023.8.21.0001",
+      "results": [
+        {
+          "numeroprocessocommascara": "0123456-78.2023.8.21.0001",
+          "numeroProcesso": "01234567820238210001",
+          "data_disponibilizacao": "20/10/2024",
+          "siglaTribunal": "TJRS",
+          "nomeOrgao": "3ª Vara Cível de Porto Alegre",
+          "tipoComunicacao": "Edital",
+          "nomeClasse": "Procedimento Comum Cível",
+          "meiocompleto": "Edital - Publicação em Diário",
+          "link": "https://exemplo.com/documento3.pdf",
+          "texto": "EDITAL DE CITAÇÃO: Processo nº 0123456-78.2023.8.21.0001. Autor: Banco ABC S.A. Réu: José da Silva (CPF: 000.000.000-00). Fica o réu JOSÉ DA SILVA citado para, querendo, apresentar contestação no prazo de 15 dias, sob pena de revelia e confissão quanto à matéria de fato. O processo tramita eletronicamente. Porto Alegre, 20 de outubro de 2024.",
+          "destinatarios": [
+            { "nome": "JOSÉ DA SILVA", "polo": "Réu" }
+          ],
+          "destinatarioadvogados": []
+        }
+      ]
+    },
+    {
+      "processNumber": "0987654-32.2024.4.03.6100",
+      "results": [
+        {
+          "numeroprocessocommascara": "0987654-32.2024.4.03.6100",
+          "numeroProcesso": "09876543220244036100",
+          "data_disponibilizacao": "22/10/2024",
+          "siglaTribunal": "TRF3",
+          "nomeOrgao": "5ª Vara Federal Cível de São Paulo",
+          "tipoComunicacao": "Intimação",
+          "nomeClasse": "Mandado de Segurança",
+          "meiocompleto": "Diário Eletrônico",
+          "link": "https://exemplo.com/documento4.pdf",
+          "texto": "INTIMAÇÃO: Vistos. Indefiro a liminar requerida, tendo em vista a ausência de demonstração do fumus boni iuris e do periculum in mora. Intime-se a autoridade coatora para prestar informações no prazo legal. Após, abra-se vista à Advocacia Geral da União e ao Ministério Público Federal, sucessivamente. São Paulo, 22 de outubro de 2024.",
+          "destinatarios": [
+            { "nome": "CONSTRUTORA ABC LTDA", "polo": "Impetrante" }
+          ],
+          "destinatarioadvogados": [
+            {
+              "advogado": {
+                "nome": "FERNANDA SOUZA OLIVEIRA",
+                "numero_oab": "234567",
+                "uf_oab": "SP"
+              }
+            }
+          ]
+        },
+        {
+          "numeroprocessocommascara": "0987654-32.2024.4.03.6100",
+          "numeroProcesso": "09876543220244036100",
+          "data_disponibilizacao": "19/10/2024",
+          "siglaTribunal": "TRF3",
+          "nomeOrgao": "5ª Vara Federal Cível de São Paulo",
+          "tipoComunicacao": "Intimação",
+          "nomeClasse": "Mandado de Segurança",
+          "meiocompleto": "Diário Eletrônico",
+          "link": "https://exemplo.com/documento5.pdf",
+          "texto": "INTIMAÇÃO: Intime-se a parte impetrante para emendar a petição inicial, esclarecendo qual ato específico está sendo questionado e juntando os documentos que comprovam o direito líquido e certo alegado, no prazo de 15 dias, sob pena de indeferimento da inicial.",
+          "destinatarios": [
+            { "nome": "CONSTRUTORA ABC LTDA", "polo": "Impetrante" }
+          ],
+          "destinatarioadvogados": [
+            {
+              "advogado": {
+                "nome": "FERNANDA SOUZA OLIVEIRA",
+                "numero_oab": "234567",
+                "uf_oab": "SP"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
