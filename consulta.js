@@ -320,39 +320,39 @@ function getTypeTag(tipo) {
     return `<span class="tag ${typeClass}">${tipo || 'N/A'}</span>`;
 }
 
-function createCommunicationItem(item, index) {
+function createCommunicationItem(item, index, processNumber) {
     const div = document.createElement('div');
     div.className = 'communication-item';
     const typeTag = getTypeTag(item.tipoComunicacao);
 
     div.innerHTML = `
-    <div class="communication-header">
-        <div>
-            <div class="communication-title">
-                <i class="fas fa-file-lines"></i>
-                Comunicação ${index}
+        <div class="communication-header">
+            <div>
+                <div class="communication-title">
+                    <i class="fas fa-file-lines"></i>
+                    Comunicação ${index}
+                </div>
+                <div class="communication-meta">
+                    ${item.data_disponibilizacao ? `<span class="meta-item"><i class="fas fa-calendar"></i>${item.data_disponibilizacao}</span>` : ''}
+                    ${item.siglaTribunal ? `<span class="meta-item"><i class="fas fa-building"></i>${item.siglaTribunal}</span>` : ''}
+                </div>
             </div>
-            <div class="communication-meta">
-                ${item.data_disponibilizacao ? `<span class="meta-item"><i class="fas fa-calendar"></i>${item.data_disponibilizacao}</span>` : ''}
-                ${item.siglaTribunal ? `<span class="meta-item"><i class="fas fa-building"></i>${item.siglaTribunal}</span>` : ''}
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="communication-tags">${typeTag}</div>
+                <button class="icon-btn" onclick="exportSingleCommunication('${processNumber}', ${index - 1})" title="Baixar PDF desta comunicação">
+                    <i class="fas fa-file-pdf"></i>
+                </button>
             </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="communication-tags">${typeTag}</div>
-            <button class="icon-btn" onclick="exportSingleCommunication('${item.numeroprocessocommascara || item.numeroProcesso}', ${index - 1})" title="Baixar PDF desta comunicação">
-                <i class="fas fa-file-pdf"></i>
-            </button>
-        </div>
-    </div>
-    <div class="communication-content">
-        ${item.nomeOrgao ? `<div class="info-row"><span class="info-label">Órgão:</span><span class="info-value">${item.nomeOrgao}</span></div>` : ''}
-        ${item.nomeClasse ? `<div class="info-row"><span class="info-label">Classe:</span><span class="info-value">${item.nomeClasse}</span></div>` : ''}
-        ${item.meiocompleto ? `<div class="info-row"><span class="info-label">Meio:</span><span class="info-value">${item.meiocompleto}</span></div>` : ''}
-        ${item.link ? `<div class="info-row"><span class="info-label">Link:</span><a href="${item.link}" target="_blank" class="communication-link">Acessar documento <i class="fas fa-external-link-alt"></i></a></div>` : ''}
-        ${item.texto && item.texto !== 'Não foi possível extrair conteúdo do documento' ? `<div class="communication-text">${item.texto}</div>` : ''}
-        ${item.destinatarios && item.destinatarios.length > 0 ? `<div class="destinatarios-section"><div class="destinatarios-title">Destinatários</div><div class="destinatarios-list">${item.destinatarios.map(d => `<span class="destinatario-badge">${d.nome} ${d.polo ? `(${d.polo})` : ''}</span>`).join('')}</div></div>` : ''}
-        ${item.destinatarioadvogados && item.destinatarioadvogados.length > 0 ? `<div class="destinatarios-section"><div class="destinatarios-title">Advogados</div><div class="destinatarios-list">${item.destinatarioadvogados.map(a => `<span class="destinatario-badge">${a.advogado.nome} - ${a.advogado.numero_oab}/${a.advogado.uf_oab}</span>`).join('')}</div></div>` : ''}
-    </div>`;
+        <div class="communication-content">
+            ${item.nomeOrgao ? `<div class="info-row"><span class="info-label">Órgão:</span><span class="info-value">${item.nomeOrgao}</span></div>` : ''}
+            ${item.nomeClasse ? `<div class="info-row"><span class="info-label">Classe:</span><span class="info-value">${item.nomeClasse}</span></div>` : ''}
+            ${item.meiocompleto ? `<div class="info-row"><span class="info-label">Meio:</span><span class="info-value">${item.meiocompleto}</span></div>` : ''}
+            ${item.link ? `<div class="info-row"><span class="info-label">Link:</span><a href="${item.link}" target="_blank" class="communication-link">Acessar documento <i class="fas fa-external-link-alt"></i></a></div>` : ''}
+            ${item.texto && item.texto !== 'Não foi possível extrair conteúdo do documento' ? `<div class="communication-text">${item.texto}</div>` : ''}
+            ${item.destinatarios && item.destinatarios.length > 0 ? `<div class="destinatarios-section"><div class="destinatarios-title">Destinatários</div><div class="destinatarios-list">${item.destinatarios.map(d => `<span class="destinatario-badge">${d.nome} ${d.polo ? `(${d.polo})` : ''}</span>`).join('')}</div></div>` : ''}
+            ${item.destinatarioadvogados && item.destinatarioadvogados.length > 0 ? `<div class="destinatarios-section"><div class="destinatarios-title">Advogados</div><div class="destinatarios-list">${item.destinatarioadvogados.map(a => `<span class="destinatario-badge">${a.advogado.nome} - ${a.advogado.numero_oab}/${a.advogado.uf_oab}</span>`).join('')}</div></div>` : ''}
+        </div>`;
     return div;
 }
 
@@ -375,12 +375,14 @@ function createProcessCard(processData) {
             <div class="process-number"><i class="fas fa-file"></i>${processData.processNumber}<span class="process-badge">${processData.results.length}</span></div>
             <div class="process-actions">
                 <button class="icon-btn" onclick="copyToClipboard('${processData.processNumber}')" title="Copiar número"><i class="fas fa-copy"></i></button>
-                <button class="icon-btn" onclick="exportSingleCommunication('${processData.processNumber}')" title="Exportar processo"><i class="fas fa-download"></i></button>
+                <button class="icon-btn" onclick="exportProcess('${processData.processNumber}')" title="Exportar processo"><i class="fas fa-download"></i></button>
             </div>`;
 
         const body = document.createElement('div');
         body.className = 'process-body';
-        processData.results.forEach((item, idx) => body.appendChild(createCommunicationItem(item, idx + 1)));
+        processData.results.forEach((item, idx) => {
+            body.appendChild(createCommunicationItem(item, idx + 1, processData.processNumber));
+        });
         card.appendChild(body);
     }
 
@@ -643,7 +645,10 @@ function exportProcess(processNumber) {
 
 function exportSingleCommunication(processNumber, commIndex) {
     const processData = allResults.find(p => p.processNumber === processNumber);
-    if (!processData || !processData.results[commIndex]) return;
+    if (!processData || !processData.results || !processData.results[commIndex]) {
+        showToast('Erro: Comunicação não encontrada', 'error');
+        return;
+    }
 
     const item = processData.results[commIndex];
     const timestamp = new Date().toISOString().split('T')[0];
@@ -663,7 +668,7 @@ function exportSingleCommunication(processNumber, commIndex) {
     const addFooter = () => {
         doc.setFontSize(8);
         doc.setTextColor(128, 128, 128);
-        doc.text(`Link da pesquisa: ${searchUrl}`, margin, pageHeight - 10, { maxWidth: maxWidth });
+        doc.text(`Link: ${searchUrl}`, margin, pageHeight - 10, { maxWidth: maxWidth });
     };
 
     // Título
@@ -756,6 +761,7 @@ function exportSingleCommunication(processNumber, commIndex) {
             doc.text(line, margin, yPosition);
             yPosition += lineHeight;
         });
+        doc.setFontSize(10);
     }
 
     // Destinatários
@@ -767,7 +773,6 @@ function exportSingleCommunication(processNumber, commIndex) {
             yPosition = 20;
         }
 
-        doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         doc.text('Destinatários:', margin, yPosition);
         yPosition += lineHeight;
@@ -783,6 +788,7 @@ function exportSingleCommunication(processNumber, commIndex) {
             doc.text(`• ${d.nome} ${d.polo ? `(${d.polo})` : ''}`, margin + 5, yPosition);
             yPosition += lineHeight;
         });
+        doc.setFontSize(10);
     }
 
     // Advogados
@@ -794,7 +800,6 @@ function exportSingleCommunication(processNumber, commIndex) {
             yPosition = 20;
         }
 
-        doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         doc.text('Advogados:', margin, yPosition);
         yPosition += lineHeight;
