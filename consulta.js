@@ -967,12 +967,24 @@ function getCurrentSearchParams() {
         "filterNumeroOab", "filterUfOab", "filterMeio",
         "itensPorPagina"
     ];
+
     fields.forEach(id => {
         const el = document.getElementById(id);
-        if (el && el.value.trim()) params.set(id, el.value.trim());
+        if (el && el.value.trim()) {
+            if (id === "processNumbers") {
+                const extracted = extractProcessNumbers(el.value);
+                if (extracted.length > 0) {
+                    params.set(id, extracted.join("\n"));
+                }
+            } else {
+                params.set(id, el.value.trim());
+            }
+        }
     });
+
     return params;
 }
+
 
 async function saveCurrentSearch() {
     const params = getCurrentSearchParams();
