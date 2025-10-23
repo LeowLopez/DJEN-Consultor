@@ -56,6 +56,15 @@
 
                 <div class="filter-section">
                     <h3><i class="fas fa-calendar"></i> Período</h3>
+                    <div class="date-presets">
+                        <p>Buscar desde:</p>
+                        <p>
+                            <button class="btn btn-small btn-secondary" onclick="setDatePreset('yesterday')">Ontem</button>
+                            <button class="btn btn-small btn-secondary" onclick="setDatePreset('today')">Hoje</button>
+                            <button class="btn btn-small btn-secondary" onclick="setDatePreset('week')">7 dias</button>
+                            <button class="btn btn-small btn-secondary" onclick="setDatePreset('month')">30 dias</button>
+                        </p>
+                    </div>
                     <div class="date-inputs">
                         <div class="input-group">
                             <label for="startDate">Data Inicial</label>
@@ -65,15 +74,6 @@
                             <label for="endDate">Data Final</label>
                             <input type="date" id="endDate">
                         </div>
-                    </div>
-                    <div class="date-presets">
-                        <p>Buscar desde:</p>
-                        <p>
-                            <button class="btn btn-small" onclick="setDatePreset('yesterday')">Ontem</button>
-                            <button class="btn btn-small" onclick="setDatePreset('today')">Hoje</button>
-                            <button class="btn btn-small" onclick="setDatePreset('week')">7 dias</button>
-                            <button class="btn btn-small" onclick="setDatePreset('month')">30 dias</button>
-                        </p>
                     </div>
                 </div>
 
@@ -173,7 +173,7 @@
 
 
                 <button class="btn btn-primary btn-block" id="fetchBtn" onclick="fetchMultipleProcesses()">
-                    <i class="fas fa-search"></i>
+                    <!-- <i class="fas fa-search"></i> -->
                     <span id="btnText">Consultar Processos</span>
                 </button>
 
