@@ -2,20 +2,21 @@ const API_BASE_URL = 'https://comunicaapi.pje.jus.br/api/v1/comunicacao';
 let allResults = [];
 
 // ====================== INICIALIZAÇÃO ======================
-window.addEventListener('load', () => {
-    const today = new Date();
-    // const sevenDaysAgo = new Date();
-    // sevenDaysAgo.setDate(today.getDate() - 7);
-    document.getElementById('startDate').value = today.toISOString().split('T')[0];
-    document.getElementById('endDate').value = today.toISOString().split('T')[0];
-});
-
 window.addEventListener('DOMContentLoaded', () => {
     renderSavedSearches();
-    // Verifica se há parâmetros na URL
-    const params = new URLSearchParams(window.location.search);
-    let hasParams = false;
 
+    const params = new URLSearchParams(window.location.search);
+    const startParam = params.get('startDate');
+    const endParam = params.get('endDate');
+
+    // Define padrão só se não vier na URL
+    if (!startParam || !endParam) {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').value = today;
+        document.getElementById('endDate').value = today;
+    }
+
+    let hasParams = false;
     const fields = [
         "processNumbers", "startDate", "endDate",
         "filterTribunal", "filterOrgao", "filterTipo",
@@ -35,13 +36,11 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Se houver parâmetros, executa a busca automaticamente
     if (hasParams) {
-        setTimeout(() => {
-            fetchMultipleProcesses();
-        }, 500);
+        setTimeout(fetchMultipleProcesses, 500);
     }
 });
+
 
 // ====================== FUNÇÕES DE INTERFACE ======================
 document.getElementById('sidebarToggle').addEventListener('click', () => {
